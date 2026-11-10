@@ -164,3 +164,14 @@ test('standalone demo builds into one self-contained file', () => {
   assert.match(html, /function RUN_ADMIN/);
   assert.doesNotMatch(html, /<script src=|<link rel="stylesheet"/, 'no external files');
 });
+
+test('older databases get new settings filled in without losing edits', () => {
+  const CORE = require('../public/js/core');
+  const old = CORE.buildSeedData();
+  delete old.settings.termsTl; delete old.settings.smsOnConfirm;
+  old.settings.deposit = 1500;
+  CORE.upgrade(old);
+  assert.ok(old.settings.termsTl.length > 0);
+  assert.strictEqual(old.settings.smsOnConfirm, true);
+  assert.strictEqual(old.settings.deposit, 1500);
+});

@@ -140,6 +140,13 @@
     return { version: 1, counter: bookings.length, settings, units, bookings };
   }
 
+  /** Fill settings added in later versions (keeps everything the admin already set). */
+  function upgrade(data) {
+    const defs = defaultSettings();
+    Object.keys(defs).forEach((k) => { if (!(k in data.settings)) data.settings[k] = defs[k]; });
+    return data;
+  }
+
   // ---------- views ----------
   function publicSettings(data) { const { adminEmail, ...rest } = data.settings; return rest; }
   function publicUnit(u) { const { plate, ...rest } = u; return rest; }
@@ -512,7 +519,7 @@
   }
 
   return {
-    IMAGE_NAME, fail, randomId,
+    IMAGE_NAME, fail, randomId, upgrade,
     defaultSettings, defaultUnits, buildSeedData,
     publicSettings, publicUnit, publicView,
     unitBusy, freeUnits, availability,

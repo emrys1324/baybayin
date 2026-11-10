@@ -25,6 +25,7 @@
   var data;
   try { data = JSON.parse(store.get(KEY)); } catch (e) { data = null; }
   if (!data || !data.settings) { data = CORE.buildSeedData(); data.demoPassword = DEMO_PASSWORD; save(); }
+  CORE.upgrade(data);
   function save() { store.set(KEY, JSON.stringify(data)); }
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
 
