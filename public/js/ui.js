@@ -90,7 +90,7 @@
     return 'data:image/svg+xml,' + encodeURIComponent(svg);
   };
   // Image URLs. Names are server-generated hex filenames; the standalone demo overrides these.
-  UI.mediaUrl = function (name) { return '/media/' + encodeURIComponent(name); };
+  UI.mediaUrl = function (name) { return '/api/media/' + encodeURIComponent(name); };
   UI.fileUrl = function (name) { return '/api/admin/files/' + encodeURIComponent(name); };
   UI.unitPhoto = function (u) { return u && u.photo ? UI.mediaUrl(u.photo) : UI.scooterArt(u && u.color); };
 

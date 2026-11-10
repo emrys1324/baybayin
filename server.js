@@ -9,7 +9,7 @@ const zlib = require('zlib');
 const crypto = require('crypto');
 const BAY = require('./public/js/shared');
 const CORE = require('./public/js/core');
-const { DB } = require('./lib/db');
+const { createStore } = require('./lib/store');
 const { hashPassword } = require('./lib/seed');
 const { notifyNewBooking } = require('./lib/messages');
 
@@ -25,10 +25,7 @@ const MIME = {
 const genId = () => crypto.randomBytes(6).toString('hex');
 
 function createApp(opts = {}) {
-  const db = new DB(opts.dataDir || process.env.DATA_DIR || path.join(__dirname, 'data'));
-  const data = db.data;
-  const sessions = new Map();          // token -> expiry
-  const loginAttempts = new Map();     // ip -> {count, until}
+  const store = createStore(opts);
 
   // ---------- helpers ----------
   function send(req, res, status, body, headers = {}) {
@@ -45,6 +42,13 @@ function createApp(opts = {}) {
   const fail = (req, res, status, error) => send(req, res, status, { error });
 
   function readBody(req) {
+    if (req.body !== undefined) {           // already parsed by the platform (e.g. Vercel)
+      if (typeof req.body === 'string' || Buffer.isBuffer(req.body)) {
+        try { return Promise.resolve(JSON.parse(String(req.body) || '{}')); }
+        catch { return Promise.reject(Object.assign(new Error('Invalid JSON'), { status: 400 })); }
+      }
+      return Promise.resolve(req.body || {});
+    }
     return new Promise((resolve, reject) => {
       let size = 0; const chunks = [];
       req.on('data', (c) => {
@@ -66,12 +70,15 @@ function createApp(opts = {}) {
     (req.headers.cookie || '').split(';').forEach((p) => { const i = p.indexOf('='); if (i > 0) out[p.slice(0, i).trim()] = decodeURIComponent(p.slice(i + 1).trim()); });
     return out;
   }
-  function isAdmin(req) {
-    const t = cookies(req).bay_admin;
-    const exp = t && sessions.get(t);
-    if (!exp) return false;
-    if (exp < Date.now()) { sessions.delete(t); return false; }
-    return true;
+  // Stateless signed session token "<expiry>.<hmac>", so any server instance can verify it.
+  // The key derives from the password hash: changing the password logs everyone out.
+  const sign = (data, exp) => crypto.createHmac('sha256', (process.env.SESSION_SECRET || '') + data.auth.hash).update(String(exp)).digest('hex');
+  function makeToken(data) { const exp = Date.now() + SESSION_TTL; return exp + '.' + sign(data, exp); }
+  function isAdmin(req, data) {
+    const [exp, mac] = String(cookies(req).bay_admin || '').split('.');
+    if (!exp || !mac || +exp < Date.now()) return false;
+    const want = Buffer.from(sign(data, exp), 'hex'), got = Buffer.from(mac, 'hex');
+    return got.length === want.length && crypto.timingSafeEqual(got, want);
   }
 
   /** Decode a data: URL and verify it's really an image. Returns { buf, ext }. */
@@ -87,11 +94,16 @@ function createApp(opts = {}) {
     return { buf, ext };
   }
   /** Save a parsed (or raw data: URL) image, return its random filename. */
-  function saveImage(img, isPublic) {
+  async function saveImage(img, isPublic) {
     if (typeof img === 'string') img = parseImage(img);
     const name = crypto.randomBytes(12).toString('hex') + img.ext;
-    fs.writeFileSync(path.join(isPublic ? db.publicDir : db.privateDir, name), img.buf);
+    await store.saveImage(name, img.buf, isPublic);
     return name;
+  }
+  async function serveImage(req, res, name, isPublic) {
+    const buf = await store.readImage(name, isPublic);
+    if (!buf) return send(req, res, 404, 'Not found', { 'Content-Type': 'text/plain' });
+    send(req, res, 200, buf, { 'Content-Type': MIME[path.extname(name)], 'Cache-Control': isPublic ? 'public, max-age=31536000, immutable' : 'private, max-age=86400' });
   }
 
   function serveFile(req, res, file, cacheControl) {
@@ -106,67 +118,67 @@ function createApp(opts = {}) {
   }
 
   // ---------- route handlers ----------
-  async function createBooking(req, res) {
+  async function createBooking(req, res, data) {
     const body = await readBody(req);
     const draft = CORE.prepareBooking(data, body);
     const licenseImg = parseImage(body.license);
     const proofImg = draft.method === 'gcash' ? parseImage(body.payment.proof) : null;
     if (!CORE.hasFreeUnit(data, draft)) return fail(req, res, 409, 'Sorry, that scooter was just booked for those dates. Please pick another one.');
-    // Everything below is synchronous => no double-booking race in a single process.
-    const files = { licensePhoto: saveImage(licenseImg, false), proof: proofImg ? saveImage(proofImg, false) : null };
-    const booking = CORE.commitBooking(data, draft, files, genId);
-    db.save();
-    notifyNewBooking(booking, data.settings);
+    const files = { licensePhoto: await saveImage(licenseImg, false), proof: proofImg ? await saveImage(proofImg, false) : null };
+    // Re-check and write under a lock => no double-booking, even with several server instances.
+    const booking = await store.withLock(async () => {
+      const fresh = await store.load();
+      const b = CORE.commitBooking(fresh, draft, files, genId);
+      await store.saveBooking(b);
+      await store.saveMeta(fresh);           // booking counter
+      return b;
+    });
+    await notifyNewBooking(booking, data.settings);
     ok(req, res, { booking: CORE.publicView(booking) });
   }
 
-  async function login(req, res) {
-    const ip = req.socket.remoteAddress;
-    const att = loginAttempts.get(ip) || { count: 0, until: 0 };
-    if (att.until > Date.now()) return fail(req, res, 429, 'Too many attempts. Try again in a few minutes.');
+  async function login(req, res, data) {
+    const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+    if (await store.hit('login:' + ip, 300) > 10) return fail(req, res, 429, 'Too many attempts. Try again in a few minutes.');
     const body = await readBody(req);
     const { salt, hash } = data.auth;
     const given = hashPassword(String(body.password || ''), salt).hash;
-    if (!crypto.timingSafeEqual(Buffer.from(given, 'hex'), Buffer.from(hash, 'hex'))) {
-      att.count++; if (att.count >= 5) { att.until = Date.now() + 5 * 60e3; att.count = 0; }
-      loginAttempts.set(ip, att);
-      return fail(req, res, 401, 'Wrong password.');
-    }
-    loginAttempts.delete(ip);
-    const token = crypto.randomBytes(24).toString('hex');
-    sessions.set(token, Date.now() + SESSION_TTL);
+    if (!crypto.timingSafeEqual(Buffer.from(given, 'hex'), Buffer.from(hash, 'hex'))) return fail(req, res, 401, 'Wrong password.');
+    const token = makeToken(data);
     const secure = req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
     return send(req, res, 200, { ok: true }, { 'Set-Cookie': `bay_admin=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_TTL / 1000}${secure}` });
   }
 
-  async function adminRoute(req, res, sub, m) {
+  async function adminRoute(req, res, sub, m, data) {
     let mm;
     if (sub === 'me') return ok(req, res, { ok: true });
     if (sub === 'data' && m === 'GET') {
       const { auth, ...rest } = data;
-      return ok(req, res, Object.assign(rest, { summary: CORE.summary(data), now: BAY.nowLocal() }));
+      return ok(req, res, Object.assign({}, rest, { summary: CORE.summary(data), now: BAY.nowLocal(), storage: store.kind }));
     }
     if (sub === 'summary') return ok(req, res, CORE.summary(data));
     if ((mm = /^bookings\/([a-f0-9]+)$/.exec(sub)) && m === 'PATCH') {
-      const booking = CORE.updateBooking(data, mm[1], await readBody(req)); db.save(); return ok(req, res, { booking });
+      const booking = CORE.updateBooking(data, mm[1], await readBody(req));
+      await store.saveBooking(booking); await store.saveMeta(data);   // unit status may change too
+      return ok(req, res, { booking });
     }
     if ((mm = /^bookings\/([a-f0-9]+)\/messages$/.exec(sub)) && m === 'GET') return ok(req, res, CORE.messages(data, mm[1]));
-    if (sub === 'units' && m === 'POST') { const unit = CORE.addUnit(data, await readBody(req), genId); db.save(); return ok(req, res, { unit }); }
+    if (sub === 'units' && m === 'POST') { const unit = CORE.addUnit(data, await readBody(req), genId); await store.saveMeta(data); return ok(req, res, { unit }); }
     if ((mm = /^units\/([a-z0-9]+)$/.exec(sub))) {
-      if (m === 'PUT') { const unit = CORE.editUnit(data, mm[1], await readBody(req)); db.save(); return ok(req, res, { unit }); }
-      if (m === 'DELETE') { CORE.deleteUnit(data, mm[1]); db.save(); return ok(req, res, { ok: true }); }
+      if (m === 'PUT') { const unit = CORE.editUnit(data, mm[1], await readBody(req)); await store.saveMeta(data); return ok(req, res, { unit }); }
+      if (m === 'DELETE') { CORE.deleteUnit(data, mm[1]); await store.saveMeta(data); return ok(req, res, { ok: true }); }
     }
-    if (sub === 'settings' && m === 'PUT') { const settings = CORE.updateSettings(data, await readBody(req)); db.save(); return ok(req, res, { settings }); }
+    if (sub === 'settings' && m === 'PUT') { const settings = CORE.updateSettings(data, await readBody(req)); await store.saveMeta(data); return ok(req, res, { settings }); }
     if (sub === 'password' && m === 'PUT') {
       const body = await readBody(req);
       if (String(body.password || '').length < 8) return fail(req, res, 400, 'Use at least 8 characters.');
-      data.auth = hashPassword(body.password); db.save();
-      return ok(req, res, { ok: true });
+      data.auth = hashPassword(body.password); await store.saveMeta(data);
+      // Old sessions are now invalid; issue a fresh one for this admin.
+      const secure = req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
+      return send(req, res, 200, { ok: true }, { 'Set-Cookie': `bay_admin=${makeToken(data)}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_TTL / 1000}${secure}` });
     }
-    if (sub === 'upload' && m === 'POST') return ok(req, res, { file: saveImage((await readBody(req)).dataUrl, true) });
-    if ((mm = /^files\/([a-f0-9]{24}\.(?:jpg|png|webp))$/.exec(sub)) && m === 'GET') {
-      return serveFile(req, res, path.join(db.privateDir, mm[1]), 'private, max-age=86400');
-    }
+    if (sub === 'upload' && m === 'POST') return ok(req, res, { file: await saveImage((await readBody(req)).dataUrl, true) });
+    if ((mm = /^files\/([a-f0-9]{24}\.(?:jpg|png|webp))$/.exec(sub)) && m === 'GET') return serveImage(req, res, mm[1], false);
     if (sub === 'export.csv' && m === 'GET') {
       return send(req, res, 200, CORE.exportCsv(data), {
         'Content-Type': 'text/csv; charset=utf-8',
@@ -182,31 +194,16 @@ function createApp(opts = {}) {
     const p = url.pathname;
     const m = req.method;
     try {
-      if (p === '/api/config' && m === 'GET') {
-        return ok(req, res, { settings: CORE.publicSettings(data), units: data.units.map(CORE.publicUnit), now: BAY.nowLocal() });
+      let mm;
+      if ((mm = /^\/(?:api\/)?media\/([a-f0-9]{24}\.(?:jpg|png|webp))$/.exec(p)) && (m === 'GET' || m === 'HEAD')) {
+        if (!store) return fail(req, res, 404, 'Not found');
+        return await serveImage(req, res, mm[1], true);
       }
-      if (p === '/api/availability' && m === 'GET') {
-        return ok(req, res, { models: CORE.availability(data, url.searchParams.get('pickup') || '', url.searchParams.get('return') || '') });
+      if (p.startsWith('/api/')) {
+        if (!store) return fail(req, res, 503, 'Online booking is being set up. Please message us on Facebook Messenger to book.');
+        return await apiRoute(req, res, url, p, m, await store.load());
       }
-      if (p === '/api/bookings' && m === 'POST') return await createBooking(req, res);
-      if (p === '/api/bookings/lookup' && m === 'GET') {
-        return ok(req, res, { booking: CORE.lookup(data, url.searchParams.get('ref'), url.searchParams.get('mobile')) });
-      }
-      if (p === '/api/admin/login' && m === 'POST') return await login(req, res);
-      if (p === '/api/admin/logout' && m === 'POST') {
-        sessions.delete(cookies(req).bay_admin);
-        return send(req, res, 200, { ok: true }, { 'Set-Cookie': 'bay_admin=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0' });
-      }
-      if (p.startsWith('/api/admin/')) {
-        if (!isAdmin(req)) return fail(req, res, 401, 'Please log in.');
-        return await adminRoute(req, res, p.slice('/api/admin/'.length), m);
-      }
-      if (p.startsWith('/api/')) return fail(req, res, 404, 'Not found');
-
-      // --- media + static ---
       if (m !== 'GET' && m !== 'HEAD') return fail(req, res, 405, 'Method not allowed');
-      const mm = /^\/media\/([a-f0-9]{24}\.(?:jpg|png|webp))$/.exec(p);
-      if (mm) return serveFile(req, res, path.join(db.publicDir, mm[1]), 'public, max-age=31536000, immutable');
       const rel = p === '/' ? '/index.html' : p === '/admin' || p === '/admin/' ? '/admin.html' : p;
       const file = path.normalize(path.join(PUBLIC_DIR, rel));
       if (!file.startsWith(PUBLIC_DIR + path.sep)) return fail(req, res, 403, 'Forbidden');
@@ -217,7 +214,29 @@ function createApp(opts = {}) {
     }
   }
 
-  return { server: http.createServer(handle), db };
+  async function apiRoute(req, res, url, p, m, data) {
+    if (p === '/api/config' && m === 'GET') {
+      return ok(req, res, { settings: CORE.publicSettings(data), units: data.units.map(CORE.publicUnit), now: BAY.nowLocal() });
+    }
+    if (p === '/api/availability' && m === 'GET') {
+      return ok(req, res, { models: CORE.availability(data, url.searchParams.get('pickup') || '', url.searchParams.get('return') || '') });
+    }
+    if (p === '/api/bookings' && m === 'POST') return await createBooking(req, res, data);
+    if (p === '/api/bookings/lookup' && m === 'GET') {
+      return ok(req, res, { booking: CORE.lookup(data, url.searchParams.get('ref'), url.searchParams.get('mobile')) });
+    }
+    if (p === '/api/admin/login' && m === 'POST') return await login(req, res, data);
+    if (p === '/api/admin/logout' && m === 'POST') {
+      return send(req, res, 200, { ok: true }, { 'Set-Cookie': 'bay_admin=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0' });
+    }
+    if (p.startsWith('/api/admin/')) {
+      if (!isAdmin(req, data)) return fail(req, res, 401, 'Please log in.');
+      return await adminRoute(req, res, p.slice('/api/admin/'.length), m, data);
+    }
+    return fail(req, res, 404, 'Not found');
+  }
+
+  return { server: http.createServer(handle), handle, store };
 }
 
 if (require.main === module) {

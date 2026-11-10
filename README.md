@@ -33,7 +33,7 @@ npm run build:demo
 The first server run creates `data/db.json` with **sample data**: 5 scooters (one is under maintenance) and 6 bookings in different statuses, dated around today.
 
 ```bash
-npm test             # API, pricing and demo-build tests (9 tests)
+npm test             # API, pricing, Redis/serverless and demo-build tests (13 tests)
 npm run seed         # reset data/db.json to sample data (overwrites!)
 ```
 
@@ -80,7 +80,8 @@ Deposit ₱1,000 · Extra helmet ₱50 · Phone holder ₱30 · Port/resort deli
 
 ```
 server.js            HTTP server, API routes, static files, auth
-lib/db.js            JSON-file storage (atomic writes)
+api/index.js         Vercel function entry point (+ vercel.json)
+lib/store.js         Storage: JSON file (local/VPS) or Upstash Redis (Vercel)
 lib/seed.js          Seeds the database (sample data from core.js + admin password)
 lib/messages.js      Webhook / Telegram / email new-booking alerts
 public/js/core.js    Booking rules (availability, validation, reports, messages), shared by server + demo
@@ -96,9 +97,20 @@ test/api.test.js     Tests
 
 ## Deploying
 
-Any host that runs Node and keeps a **persistent disk** for `DATA_DIR` will work: a small VPS, Railway or Render with a volume, or Fly.io with a volume. Put it behind HTTPS (most hosts do this for you). The app sets `Secure` on the admin cookie when `X-Forwarded-Proto: https` is present. **Back up `DATA_DIR`** (db.json plus uploads) regularly.
+### Vercel (recommended for a small shop: free tier, HTTPS included)
 
-> Serverless hosts with no persistent disk (e.g. Vercel or Netlify functions) are **not** suitable as-is, because bookings would be lost. See "Database upgrade" below.
+Vercel functions have no permanent disk, so on Vercel the app stores bookings and photos in **Upstash Redis** (Vercel's Redis storage, which has a free tier). Without a database the site still loads, but booking requests answer "Online booking is being set up, please message us on Messenger" instead of losing data.
+
+1. Import this repository in Vercel (**Add New → Project**). No build settings are needed; `vercel.json` handles it.
+2. In the project, open **Storage → Create Database → Upstash for Redis** and connect it to the project. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_*`) automatically.
+3. Optional environment variables: `ADMIN_PASSWORD` (initial password, used on first run only), `SESSION_SECRET` (any long random string), plus the alert variables above.
+4. Redeploy. The first request seeds the sample data. Log in at `/admin` and change the password straight away.
+
+How it fits Vercel: `public/` is served from Vercel's CDN, and every `/api/*` request goes to one function (`api/index.js`). Admin logins use signed cookies, so any function instance can verify them. Bookings are re-checked under a Redis lock, so two people can't book the last scooter at once, even on different instances. Request bodies on Vercel are limited to 4.5 MB, which is plenty because photos are compressed on the phone first.
+
+### A server with a disk (VPS, Railway, Render, Fly.io)
+
+Run `npm start` with `DATA_DIR` on a persistent volume. Without Redis variables, the app uses the JSON file and image folders. Put it behind HTTPS (the admin cookie gets `Secure` when `X-Forwarded-Proto: https` is present), and **back up `DATA_DIR`** regularly. You can also use Redis here by setting the same variables.
 
 ---
 
@@ -136,7 +148,7 @@ Any host that runs Node and keeps a **persistent disk** for `DATA_DIR` will work
 | **4: Growth** | Tagalog language toggle | 1 day | Copy is already centralised |
 | | Offline-capable PWA (installable, caches the shell for patchy signal) | 1 day | |
 | | Seasonal pricing (peak/holiday rates), promo codes | 1–2 days | |
-| | Database upgrade to SQLite/Postgres (needed for serverless hosting or >1 server) | 1–2 days | JSON storage is fine for a single small shop |
+| | Move to Postgres (only if reporting needs grow) | 1–2 days | Redis/JSON is fine for a single small shop |
 | | Online payments (PayMongo: GCash/Maya/cards with automatic confirmation) | 2–3 days | Needs a PayMongo business account |
 
 ### Assumptions and open questions
