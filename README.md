@@ -43,7 +43,7 @@ Each new booking also prints an **SMS-ready alert** to the server log. The admin
 | Area | Details |
 |---|---|
 | **Time zone** | Everything is Asia/Manila (UTC+8), whatever the phone's or server's time zone is. |
-| **Hours** | Pickup and return times are offered only within shop hours (default **9:00 AM – 11:00 PM**, editable). |
+| **Hours** | Pickup and return times are offered only within shop hours (default **9:00 AM – 6:00 PM**, editable). |
 | **No double-bookings** | The server checks availability again at the moment of booking. A unit counts as busy if it has an overlapping *pending*, *confirmed* or *picked-up* booking, plus a turnaround buffer (default 60 min). Units *under maintenance* are never offered. |
 | **Fleet** | Customers pick a **model** (e.g. "Honda Click 125 – 2 available"). The server assigns a free unit, and admin can reassign the unit (plate) in the booking details. |
 | **Pricing** | Up to 6 hrs = half-day rate (if set). Longer rentals are charged per started day, with a 60-min grace period. From 3 days on, the multi-day rate applies. Add-ons are a flat price or per day. The deposit is shown separately. All of these are editable. |
@@ -126,7 +126,7 @@ Any host that runs Node and keeps a **persistent disk** for `DATA_DIR` will work
 
 ### Assumptions and open questions
 
-1. **Pickup hours:** the brief says both "9 AM–11 PM daily" and "only within 9 AM–6 PM". v1 uses **9 AM–11 PM** (the stated shop hours). Change it in one place: Admin → Settings → Pickup & return hours.
+1. **Pickup hours:** pickups and returns are limited to **9 AM–6 PM** (confirmed by the owner). Change it in one place: Admin → Settings → Pickup & return hours.
 2. **Day counting:** a "day" is 24 hours from pickup, with a 60-min grace period. Rentals of 6 hours or less use the half-day rate when one is set.
 3. **GCash pays the rental only.** The deposit is always collected in cash at pickup.
 4. **New bookings start as Pending.** Admin confirms them (after checking GCash) and sends the copy-ready message.

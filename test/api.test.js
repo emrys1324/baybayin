@@ -67,6 +67,10 @@ test('config hides plate numbers', async () => {
 test('availability rejects out-of-hours windows', async () => {
   const r = await call('GET', `/api/availability?pickup=${day(10)}T07:00&return=${day(11)}T09:00`);
   assert.strictEqual(r.status, 400);
+  const late = await call('GET', `/api/availability?pickup=${day(10)}T09:00&return=${day(10)}T19:00`);
+  assert.strictEqual(late.status, 400, 'return after 6 PM rejected');
+  const edge = await call('GET', `/api/availability?pickup=${day(10)}T09:00&return=${day(10)}T18:00`);
+  assert.strictEqual(edge.status, 200, '6:00 PM return allowed');
 });
 
 test('booking flow prevents double-booking', async () => {
@@ -81,7 +85,7 @@ test('booking flow prevents double-booking', async () => {
   assert.strictEqual(r1.data.booking.quote.total, 550);
   const r2 = await call('POST', '/api/bookings', bookingBody());
   assert.strictEqual(r2.status, 200);
-  const r3 = await call('POST', '/api/bookings', bookingBody({ pickup: day(10) + 'T15:00', return: day(10) + 'T20:00' }));
+  const r3 = await call('POST', '/api/bookings', bookingBody({ pickup: day(10) + 'T13:00', return: day(10) + 'T18:00' }));
   assert.strictEqual(r3.status, 409, 'both Click units taken');
 
   a = await call('GET', `/api/availability?pickup=${day(10)}T09:00&return=${day(11)}T09:00`);
