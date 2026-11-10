@@ -89,7 +89,10 @@
       '<circle cx="124" cy="40" r="4" fill="#ffd36b"/></svg>';
     return 'data:image/svg+xml,' + encodeURIComponent(svg);
   };
-  UI.unitPhoto = function (u) { return u && u.photo ? '/media/' + u.photo : UI.scooterArt(u && u.color); };
+  // Image URLs. Names are server-generated hex filenames; the standalone demo overrides these.
+  UI.mediaUrl = function (name) { return '/media/' + encodeURIComponent(name); };
+  UI.fileUrl = function (name) { return '/api/admin/files/' + encodeURIComponent(name); };
+  UI.unitPhoto = function (u) { return u && u.photo ? UI.mediaUrl(u.photo) : UI.scooterArt(u && u.color); };
 
   window.UI = UI;
 })();

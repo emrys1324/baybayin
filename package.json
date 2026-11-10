@@ -7,8 +7,11 @@
   "scripts": {
     "start": "node server.js",
     "seed": "node lib/seed.js --force",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "build:demo": "node scripts/build-demo.js"
   },
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "license": "UNLICENSED"
 }

@@ -1,0 +1,1813 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Baybayin Scooter Rental (demo)</title>
+<meta name="theme-color" content="#0b6e99">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%230b6e99'/%3E%3Cpath d='M4 20q6-4 12 0t12 0v8H4z' fill='%23f4e7cf'/%3E%3Ccircle cx='22' cy='10' r='4' fill='%23ffd36b'/%3E%3C/svg%3E">
+<style>
+/* Baybayin Scooter Rental — island palette, mobile-first, no external fonts */
+:root {
+  --ocean: #0b6e99; --ocean-d: #08506f; --sea: #2bb3c0; --sky: #e6f6fa;
+  --sand: #f4e7cf; --sand-d: #e2cfa8; --coral: #f26b4f; --ink: #17323f; --muted: #5e7480;
+  --line: #dfe8ec; --bg: #ffffff; --ok: #1e9e63; --warn: #d98a00; --err: #c8412b;
+  --r: 14px; --shadow: 0 2px 10px rgba(11, 60, 80, .08);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+img { max-width: 100%; display: block; }
+a { color: var(--ocean); }
+h1, h2, h3 { line-height: 1.2; margin: 0 0 .5rem; }
+h2 { font-size: 1.35rem; }
+h3 { font-size: 1.05rem; }
+p { margin: 0 0 .75rem; }
+.wrap { max-width: 560px; margin: 0 auto; padding: 0 16px; }
+.muted { color: var(--muted); }
+.small { font-size: .875rem; }
+.center { text-align: center; }
+.hidden { display: none !important; }
+.row { display: flex; gap: 10px; align-items: center; }
+.row > * { flex: 1; }
+.spacer { height: 1rem; }
+
+/* header */
+.topbar { position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid var(--line); }
+.topbar .wrap { display: flex; align-items: center; gap: 10px; height: 56px; }
+.brand { font-weight: 800; color: var(--ocean-d); text-decoration: none; display: flex; align-items: center; gap: 8px; flex: 1; font-size: 1.05rem; }
+.brand svg { width: 30px; height: 30px; }
+.iconbtn { border: 0; background: none; min-width: 44px; height: 44px; border-radius: 12px; font-size: 1.4rem; color: var(--ocean-d); cursor: pointer; }
+
+/* hero */
+.hero { background: linear-gradient(180deg, var(--sky) 0%, #fff 75%); padding: 28px 0 10px; position: relative; overflow: hidden; }
+.hero h1 { font-size: 1.9rem; color: var(--ocean-d); }
+.hero .tag { font-size: 1.05rem; color: var(--ink); }
+.hero-art { width: 100%; height: auto; margin: 6px 0 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.chip { background: var(--sand); color: var(--ink); border-radius: 999px; padding: 6px 12px; font-size: .875rem; }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 12px 20px; border-radius: var(--r);
+  border: 2px solid transparent; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; text-align: center;
+  background: var(--ocean); color: #fff; width: 100%; -webkit-tap-highlight-color: transparent; transition: transform .05s, background .15s; }
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.big { min-height: 60px; font-size: 1.15rem; box-shadow: 0 6px 16px rgba(11, 110, 153, .25); }
+.btn.alt { background: #fff; color: var(--ocean); border-color: var(--ocean); }
+.btn.sand { background: var(--sand); color: var(--ink); }
+.btn.coral { background: var(--coral); }
+.btn.ghost { background: transparent; color: var(--ocean); border-color: transparent; }
+.btn.messenger { background: #0866ff; }
+.btn.sm { min-height: 40px; padding: 6px 12px; font-size: .9rem; width: auto; border-radius: 10px; }
+
+/* cards & sections */
+section { padding: 18px 0; }
+.card { background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 16px; box-shadow: var(--shadow); margin-bottom: 12px; }
+.card.sand { background: #fcf7ee; border-color: var(--sand-d); }
+.info-list { list-style: none; padding: 0; margin: 0; }
+.info-list li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.info-list li:last-child { border: 0; }
+.info-list .ico { font-size: 1.3rem; width: 28px; text-align: center; flex: none; }
+.gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.gallery img { border-radius: 10px; aspect-ratio: 4/3; object-fit: cover; width: 100%; background: var(--sky); }
+.fleet-mini { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.fleet-mini .card { padding: 10px; margin: 0; }
+.fleet-mini .name { font-weight: 700; font-size: .95rem; }
+.scooter-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; background: var(--sky); }
+
+/* stepper */
+.steps { display: flex; gap: 4px; margin: 14px 0 6px; }
+.steps i { flex: 1; height: 5px; border-radius: 4px; background: var(--line); }
+.steps i.on { background: var(--sea); }
+.step-title { font-size: .85rem; color: var(--muted); margin-bottom: 4px; }
+
+/* forms */
+label.f { display: block; font-weight: 600; margin: 14px 0 6px; font-size: .95rem; }
+label.f .opt { font-weight: 400; color: var(--muted); }
+input, select, textarea { width: 100%; font: inherit; font-size: 16px; padding: 12px 14px; min-height: 50px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); }
+textarea { min-height: 90px; resize: vertical; }
+input:focus, select:focus, textarea:focus { outline: 0; border-color: var(--sea); box-shadow: 0 0 0 3px rgba(43, 179, 192, .2); }
+.hint { font-size: .85rem; color: var(--muted); margin-top: 4px; }
+.err-box { background: #fdecea; color: var(--err); border-radius: 12px; padding: 12px 14px; margin: 12px 0; font-weight: 600; }
+.check { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1.5px solid var(--line); border-radius: 12px; cursor: pointer; margin: 10px 0; }
+.check input { width: 24px; height: 24px; min-height: 0; flex: none; margin: 0; accent-color: var(--ocean); }
+.seg { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 8px; }
+.seg button { min-height: 48px; border: 1.5px solid var(--line); background: #fff; border-radius: 12px; font: inherit; font-weight: 600; color: var(--ink); cursor: pointer; padding: 6px; }
+.seg button.on { border-color: var(--ocean); background: var(--sky); color: var(--ocean-d); }
+.quick { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+.quick button { flex: none; min-height: 44px; padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--line); background: #fff; font: inherit; font-weight: 600; color: var(--ink); cursor: pointer; }
+.quick button.on { background: var(--ocean); border-color: var(--ocean); color: #fff; }
+
+/* scooter choice */
+.pick { display: flex; gap: 12px; align-items: center; padding: 12px; border: 2px solid var(--line); border-radius: var(--r); margin-bottom: 10px; cursor: pointer; background: #fff; width: 100%; font: inherit; text-align: left; color: inherit; }
+.pick.on { border-color: var(--ocean); background: var(--sky); }
+.pick:disabled { opacity: .5; cursor: not-allowed; }
+.pick .thumb { width: 96px; flex: none; }
+.pick .thumb img { border-radius: 10px; aspect-ratio: 4/3; object-fit: cover; background: var(--sky); }
+.pick .body { flex: 1; min-width: 0; }
+.pick .title { font-weight: 700; }
+.pick .price { font-weight: 800; color: var(--ocean-d); font-size: 1.1rem; }
+.badge { display: inline-block; font-size: .75rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--sky); color: var(--ocean-d); }
+.badge.ok { background: #e3f6ec; color: var(--ok); }
+.badge.no { background: #fdecea; color: var(--err); }
+.badge.warn { background: #fff4dc; color: var(--warn); }
+
+/* add-ons */
+.addon { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.addon:last-child { border: 0; }
+.addon .name { flex: 1; font-weight: 600; }
+.qty { display: flex; align-items: center; gap: 4px; }
+.qty button { width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-size: 1.3rem; font-weight: 700; color: var(--ocean); cursor: pointer; }
+.qty span { min-width: 26px; text-align: center; font-weight: 700; }
+.toggle { width: 56px; height: 34px; border-radius: 999px; background: var(--line); border: 0; position: relative; cursor: pointer; flex: none; }
+.toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: left .15s; }
+.toggle.on { background: var(--sea); }
+.toggle.on::after { left: 25px; }
+
+/* price breakdown */
+.breakdown { width: 100%; border-collapse: collapse; }
+.breakdown td { padding: 6px 0; vertical-align: top; }
+.breakdown td:last-child { text-align: right; white-space: nowrap; padding-left: 10px; }
+.breakdown tr.total td { border-top: 2px solid var(--line); padding-top: 10px; font-weight: 800; font-size: 1.1rem; }
+.breakdown tr.dep td { color: var(--muted); }
+.breakdown tr.due td { font-weight: 700; color: var(--ocean-d); }
+
+/* sticky bottom bar */
+.bottombar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -4px 14px rgba(11, 60, 80, .08); padding: 10px 0 calc(10px + var(--safe-b)); }
+.bottombar .wrap { display: flex; gap: 12px; align-items: center; }
+.bottombar .sum { flex: 1; min-width: 0; }
+.bottombar .sum b { display: block; font-size: 1.25rem; color: var(--ocean-d); }
+.bottombar .btn { width: auto; flex: 1.3; }
+.bottombar .back { flex: none; width: 52px; padding: 0; }
+.has-bar { padding-bottom: 110px; }
+
+/* upload */
+.upload { display: block; border: 2px dashed var(--sand-d); background: #fcf7ee; border-radius: var(--r); padding: 18px; text-align: center; cursor: pointer; }
+.upload input { display: none; }
+.upload img { max-height: 200px; margin: 0 auto 8px; border-radius: 10px; }
+.upload .big-ico { font-size: 2rem; }
+
+/* gcash */
+.gcash { border: 2px solid #0a5bd8; border-radius: var(--r); padding: 14px; background: #f2f7ff; }
+.gcash .num { font-size: 1.4rem; font-weight: 800; letter-spacing: .5px; }
+.gcash img { max-width: 220px; margin: 10px auto; border-radius: 10px; }
+
+/* confirmation */
+.done-ico { width: 84px; height: 84px; border-radius: 50%; background: #e3f6ec; color: var(--ok); font-size: 2.8rem; display: flex; align-items: center; justify-content: center; margin: 18px auto 8px; }
+.ref { font-size: 2rem; font-weight: 800; letter-spacing: 1px; color: var(--ocean-d); background: var(--sky); border-radius: 12px; padding: 8px 16px; display: inline-block; margin: 6px 0 12px; }
+
+/* modal + toast */
+.modal { position: fixed; inset: 0; z-index: 50; background: rgba(10, 30, 40, .5); display: flex; align-items: flex-end; justify-content: center; }
+.modal .sheet { background: #fff; width: 100%; max-width: 640px; max-height: 92vh; overflow: auto; border-radius: 20px 20px 0 0; padding: 18px 16px calc(18px + var(--safe-b)); }
+.modal .sheet header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+@media (min-width: 700px) { .modal { align-items: center; } .modal .sheet { border-radius: 20px; } }
+.toast { position: fixed; left: 50%; bottom: calc(96px + var(--safe-b)); transform: translateX(-50%); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 12px; z-index: 60; font-weight: 600; max-width: 90vw; text-align: center; }
+ol.terms { padding-left: 1.2rem; }
+ol.terms li { margin-bottom: 8px; }
+
+footer.site { background: var(--ocean-d); color: #dceef5; padding: 24px 0 calc(24px + var(--safe-b)); margin-top: 20px; font-size: .9rem; }
+footer.site a { color: #fff; }
+.wave { display: block; width: 100%; height: 28px; color: var(--ocean-d); }
+.spinner { width: 28px; height: 28px; border: 3px solid var(--line); border-top-color: var(--ocean); border-radius: 50%; animation: spin .8s linear infinite; margin: 20px auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Admin dashboard additions */
+body.admin { background: #f6fafb; padding-bottom: calc(80px + var(--safe-b)); }
+.wrap.wide { max-width: 1100px; }
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; background: #fff; border-top: 1px solid var(--line); padding-bottom: var(--safe-b); }
+.tabs a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 2px; font-size: .72rem; font-weight: 600; color: var(--muted); text-decoration: none; position: relative; min-height: 58px; justify-content: center; }
+.tabs a span { font-size: 1.25rem; line-height: 1; }
+.tabs a.on { color: var(--ocean); }
+.tabs .count { position: absolute; top: 4px; left: 55%; background: var(--coral); color: #fff; border-radius: 999px; font-size: .7rem; padding: 1px 6px; }
+.filters { display: flex; gap: 8px; overflow-x: auto; padding: 12px 0 8px; -webkit-overflow-scrolling: touch; }
+.filters button { flex: none; min-height: 40px; padding: 6px 14px; border-radius: 999px; border: 1.5px solid var(--line); background: #fff; font: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); cursor: pointer; }
+.filters button.on { background: var(--ocean); color: #fff; border-color: var(--ocean); }
+.filters button small { opacity: .75; margin-left: 4px; }
+.bk { display: block; width: 100%; text-align: left; font: inherit; color: inherit; background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; margin-bottom: 8px; cursor: pointer; box-shadow: var(--shadow); }
+.bk .top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.bk .ref { font-weight: 800; color: var(--ocean-d); font-size: 1rem; background: none; padding: 0; margin: 0; letter-spacing: 0; display: inline; }
+.bk .new { background: var(--coral); color: #fff; border-radius: 6px; font-size: .7rem; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
+.st { font-size: .75rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.st.pending { background: #fff4dc; color: #a86a00; }
+.st.confirmed { background: #e3f0fb; color: #1a5fa0; }
+.st.picked_up { background: #e3f6ec; color: var(--ok); }
+.st.returned { background: #eef1f3; color: #55666f; }
+.st.cancelled { background: #fdecea; color: var(--err); }
+.kv { display: grid; grid-template-columns: 110px 1fr; gap: 6px 10px; font-size: .95rem; margin: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; word-break: break-word; }
+.actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.actions .btn { min-height: 48px; font-size: .95rem; }
+.actions .btn.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+.proof img { border-radius: 10px; border: 1px solid var(--line); max-height: 300px; margin: 6px 0; cursor: zoom-in; }
+.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.stat { background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 14px; }
+.stat .v { font-size: 1.5rem; font-weight: 800; color: var(--ocean-d); }
+.stat .l { font-size: .8rem; color: var(--muted); }
+@media (min-width: 760px) { .stats { grid-template-columns: repeat(4, 1fr); } .bklist { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; } }
+/* timeline */
+.tl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: #fff; -webkit-overflow-scrolling: touch; }
+.tl { position: relative; }
+.tl-row { display: flex; border-bottom: 1px solid var(--line); height: 54px; }
+.tl-row:last-child { border-bottom: 0; }
+.tl-label { position: sticky; left: 0; z-index: 2; width: 112px; flex: none; background: #fff; border-right: 1px solid var(--line); padding: 6px 8px; font-size: .78rem; line-height: 1.2; }
+.tl-label b { display: block; font-size: .82rem; }
+.tl-track { position: relative; flex: none; }
+.tl-day { position: absolute; top: 0; bottom: 0; border-left: 1px solid #eef3f5; }
+.tl-day.today { background: rgba(43, 179, 192, .08); }
+.tl-head .tl-day { font-size: .72rem; color: var(--muted); padding: 4px; text-align: center; }
+.tl-head { height: 40px; }
+.tl-bar { position: absolute; top: 8px; height: 38px; border-radius: 8px; padding: 2px 6px; font-size: .72rem; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; border: 0; text-align: left; font-family: inherit; line-height: 1.25; }
+.tl-bar.pending { background: #e0a326; }
+.tl-bar.confirmed { background: #2a78c2; }
+.tl-bar.picked_up { background: var(--ok); }
+.tl-bar.returned { background: #9aa9b1; }
+.tl-maint { position: absolute; inset: 0; background: repeating-linear-gradient(45deg, #f3f3f3 0 8px, #e8e8e8 8px 16px); }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: .8rem; margin: 8px 0; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; }
+.unit-row { display: flex; gap: 12px; align-items: center; }
+.unit-row img { width: 84px; border-radius: 10px; aspect-ratio: 4/3; object-fit: cover; flex: none; }
+.edit-list .item { display: grid; grid-template-columns: 1fr 90px 44px; gap: 6px; align-items: center; margin-bottom: 8px; }
+.edit-list .item.addon { grid-template-columns: 1fr 80px 64px 44px; }
+.edit-list input { min-height: 44px; padding: 8px 10px; }
+.mini-check { display: flex; align-items: center; gap: 4px; font-size: .75rem; }
+.mini-check input { width: 20px; height: 20px; min-height: 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+.thumbs .t { position: relative; }
+.thumbs img { width: 90px; height: 68px; object-fit: cover; border-radius: 8px; }
+.thumbs button { position: absolute; top: -6px; right: -6px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: var(--err); color: #fff; cursor: pointer; }
+pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; padding: 10px; font: .85rem/1.45 ui-monospace, Menlo, monospace; max-height: 220px; overflow: auto; }
+.search { margin-top: 12px; }
+
+.demo-ribbon { background: #17323f; color: #fff; font-size: .8rem; padding: 6px 0; }
+.demo-ribbon .wrap { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; max-width: 1100px; }
+.demo-ribbon b { color: #ffd36b; }
+.demo-ribbon span { flex: 1; min-width: 160px; }
+.demo-ribbon button { background: #fff; color: #17323f; border: 0; border-radius: 8px; padding: 6px 10px; font: inherit; font-weight: 700; min-height: 34px; cursor: pointer; }
+.demo-ribbon button.ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.4); }
+</style>
+</head>
+<body>
+<div class="spinner"></div>
+<script>
+/* Shared time + pricing logic. Loaded by the browser (window.BAY) and by Node (require).
+   All times are Asia/Manila local wall-clock strings: "YYYY-MM-DDTHH:mm" (UTC+8, no DST). */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.BAY = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+  var OFFSET = 8 * 3600e3; // Asia/Manila
+  var HOUR = 3600e3;
+  var ACTIVE_STATUSES = ['pending', 'confirmed', 'picked_up'];
+  var STATUS_LABELS = {
+    pending: 'Pending', confirmed: 'Confirmed', picked_up: 'Picked Up',
+    returned: 'Returned', cancelled: 'Cancelled'
+  };
+  var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  var LOCAL_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+  function isLocal(s) { return typeof s === 'string' && LOCAL_RE.test(s) && !isNaN(toEpoch(s)); }
+  function toEpoch(local) { return Date.parse(local + ':00+08:00'); }
+  function fromEpoch(ms) {
+    var d = new Date(ms + OFFSET);
+    return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) +
+      'T' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
+  }
+  function nowLocal() { return fromEpoch(Date.now()); }
+  function today() { return nowLocal().slice(0, 10); }
+  function addHours(local, h) { return fromEpoch(toEpoch(local) + h * HOUR); }
+  function addDays(dateStr, n) { return fromEpoch(toEpoch(dateStr + 'T00:00') + n * 24 * HOUR).slice(0, 10); }
+  function minutesOf(hhmm) { var p = hhmm.split(':'); return +p[0] * 60 + +p[1]; }
+  function withinHours(local, open, close) {
+    var m = minutesOf(local.slice(11));
+    return m >= minutesOf(open) && m <= minutesOf(close);
+  }
+  function fmtTime(hhmm) {
+    var m = minutesOf(hhmm), h = Math.floor(m / 60), mm = m % 60;
+    var ap = h >= 12 ? 'PM' : 'AM', h12 = h % 12 || 12;
+    return h12 + ':' + pad(mm) + ' ' + ap;
+  }
+  function fmtDate(dateStr) {
+    var d = new Date(toEpoch(dateStr + 'T00:00') + OFFSET);
+    return DAYS[d.getUTCDay()] + ', ' + MONTHS[d.getUTCMonth()] + ' ' + d.getUTCDate();
+  }
+  function fmtLocal(local) { return fmtDate(local.slice(0, 10)) + ' · ' + fmtTime(local.slice(11)); }
+  function peso(n) {
+    n = Math.round(Number(n) || 0);
+    return '₱' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  function durationText(hours) {
+    if (hours < 24) return (Math.round(hours * 10) / 10) + ' hrs';
+    var d = Math.floor(hours / 24), h = Math.round(hours - d * 24);
+    return d + (d === 1 ? ' day' : ' days') + (h ? ' ' + h + ' hrs' : '');
+  }
+  /** Time slots (HH:mm) offered within shop hours. */
+  function timeSlots(settings) {
+    var out = [], step = settings.slotMinutes || 30;
+    for (var m = minutesOf(settings.openTime); m <= minutesOf(settings.closeTime); m += step) {
+      out.push(pad(Math.floor(m / 60)) + ':' + pad(m % 60));
+    }
+    return out;
+  }
+  /** Replace {deposit}, {lateFee}, {cancelHours} tokens in terms text. */
+  function fillTerms(text, s) {
+    return String(text)
+      .replace(/\{deposit\}/g, peso(s.deposit))
+      .replace(/\{lateFee\}/g, peso(s.lateFeePerHour))
+      .replace(/\{cancelHours\}/g, String(s.freeCancelHours));
+  }
+
+  /**
+   * Validate a pickup/return window against shop rules. Returns an error string or null.
+   * opts.skipLead: don't enforce "pickup must be in the future" (admin edits / tests).
+   */
+  function validateWindow(pickup, ret, s, opts) {
+    opts = opts || {};
+    if (!isLocal(pickup) || !isLocal(ret)) return 'Please choose pickup and return date & time.';
+    if (!withinHours(pickup, s.openTime, s.closeTime)) return 'Pickup must be between ' + fmtTime(s.openTime) + ' and ' + fmtTime(s.closeTime) + '.';
+    if (!withinHours(ret, s.openTime, s.closeTime)) return 'Return must be between ' + fmtTime(s.openTime) + ' and ' + fmtTime(s.closeTime) + '.';
+    var p = toEpoch(pickup), r = toEpoch(ret);
+    if (!opts.skipLead && p < Date.now() + (s.leadMinutes || 0) * 60e3) {
+      return 'Pickup needs to be at least ' + (s.leadMinutes || 0) + ' minutes from now.';
+    }
+    if (r <= p) return 'Return must be after pickup.';
+    if (r - p < (s.minHours || 1) * HOUR) return 'Minimum rental is ' + (s.minHours || 1) + ' hours.';
+    if (r - p > (s.maxDays || 30) * 24 * HOUR) return 'For rentals longer than ' + (s.maxDays || 30) + ' days, please message us.';
+    return null;
+  }
+
+  /**
+   * Price quote for one unit.
+   * addonSel: { addonId: qty }
+   * Returns { hours, days, rentalLabel, rental, addons:[{id,name,price,qty,amount}], addonsTotal, total, deposit, dueAtPickup }
+   */
+  function quote(unit, pickup, ret, addonSel, s) {
+    var hours = (toEpoch(ret) - toEpoch(pickup)) / HOUR;
+    var rental, label, days;
+    if (unit.halfDayRate > 0 && hours <= (s.halfDayHours || 6)) {
+      days = 1; // per-day add-ons count as 1 day
+      rental = unit.halfDayRate;
+      label = 'Half-day (up to ' + (s.halfDayHours || 6) + ' hrs)';
+    } else {
+      var grace = (s.graceMinutes || 0) / 60;
+      days = Math.max(1, Math.ceil((hours - grace) / 24));
+      var multi = unit.multiDayRate > 0 && days >= (s.multiDayMinDays || 3);
+      var rate = multi ? unit.multiDayRate : unit.dailyRate;
+      rental = rate * days;
+      label = days + (days === 1 ? ' day' : ' days') + ' × ' + peso(rate) + (multi ? ' (multi-day rate)' : '');
+    }
+    var lines = [], addonsTotal = 0;
+    (s.addons || []).forEach(function (a) {
+      if (!a.active) return;
+      var qty = Math.max(0, Math.min(a.maxQty || 1, parseInt((addonSel || {})[a.id], 10) || 0));
+      if (!qty) return;
+      var amount = a.price * qty * (a.perDay ? days : 1);
+      addonsTotal += amount;
+      lines.push({ id: a.id, name: a.name, price: a.price, perDay: !!a.perDay, qty: qty, amount: amount });
+    });
+    var total = rental + addonsTotal;
+    return {
+      hours: hours, days: days, rentalLabel: label, rental: rental,
+      addons: lines, addonsTotal: addonsTotal, total: total,
+      deposit: s.deposit || 0, dueAtPickup: total + (s.deposit || 0)
+    };
+  }
+
+  /** True if two windows overlap, with a turnaround buffer (minutes) between rentals. */
+  function overlaps(aStart, aEnd, bStart, bEnd, bufferMin) {
+    var buf = (bufferMin || 0) * 60e3;
+    return toEpoch(aStart) < toEpoch(bEnd) + buf && toEpoch(bStart) < toEpoch(aEnd) + buf;
+  }
+
+  return {
+    ACTIVE_STATUSES: ACTIVE_STATUSES, STATUS_LABELS: STATUS_LABELS,
+    pad: pad, isLocal: isLocal, toEpoch: toEpoch, fromEpoch: fromEpoch, nowLocal: nowLocal, today: today,
+    addHours: addHours, addDays: addDays, withinHours: withinHours, minutesOf: minutesOf,
+    fmtTime: fmtTime, fmtDate: fmtDate, fmtLocal: fmtLocal, peso: peso, durationText: durationText,
+    timeSlots: timeSlots, fillTerms: fillTerms, validateWindow: validateWindow, quote: quote, overlaps: overlaps
+  };
+});
+
+;
+/* Small browser helpers shared by the customer app and the admin dashboard. */
+(function () {
+  'use strict';
+  var UI = {};
+  UI.$ = function (sel, el) { return (el || document).querySelector(sel); };
+  UI.$$ = function (sel, el) { return Array.prototype.slice.call((el || document).querySelectorAll(sel)); };
+  UI.esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+
+  UI.api = function (method, url, body) {
+    var opts = { method: method, headers: {}, credentials: 'same-origin' };
+    if (body !== undefined) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    return fetch(url, opts).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (data) {
+        if (!r.ok) { var e = new Error(data.error || 'Network error, please try again.'); e.status = r.status; throw e; }
+        return data;
+      });
+    }, function () { throw new Error('No connection. Please check your signal and try again.'); });
+  };
+
+  var toastTimer;
+  UI.toast = function (text) {
+    var t = UI.$('.toast') || document.body.appendChild(Object.assign(document.createElement('div'), { className: 'toast' }));
+    t.textContent = text; t.classList.remove('hidden');
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.add('hidden'); }, 2600);
+  };
+
+  UI.modal = function (title, html, onOpen) {
+    var m = document.createElement('div');
+    m.className = 'modal';
+    m.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-label="' + UI.esc(title) + '"><header><h2>' + UI.esc(title) +
+      '</h2><button class="iconbtn" data-close aria-label="Close">✕</button></header><div class="mbody">' + html + '</div></div>';
+    function close() { m.remove(); document.removeEventListener('keydown', onKey); }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    m.addEventListener('click', function (e) { if (e.target === m || e.target.closest('[data-close]')) close(); });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(m);
+    if (onOpen) onOpen(m.querySelector('.mbody'), close);
+    return close;
+  };
+
+  UI.copy = function (text) {
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); UI.toast('Copied!'); } catch (e) { UI.toast('Could not copy — please select and copy.'); }
+      ta.remove();
+    }
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(function () { UI.toast('Copied!'); }, fallback);
+    else fallback();
+  };
+
+  /** Resize + re-encode an image file in the browser so uploads stay small on slow data. Resolves to a JPEG data URL. */
+  UI.compressImage = function (file, maxSide, quality) {
+    maxSide = maxSide || 1280; quality = quality || 0.72;
+    return new Promise(function (resolve, reject) {
+      if (!file || !/^image\//.test(file.type)) return reject(new Error('Please choose a photo (JPG or PNG).'));
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        var s = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+        var c = document.createElement('canvas');
+        c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s);
+        var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        resolve(c.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('Could not read that photo. Try another one.')); };
+      img.src = url;
+    });
+  };
+
+  /** Lightweight inline scooter illustration used when no photo is uploaded (~1 KB). */
+  UI.scooterArt = function (color) {
+    color = color || '#0b6e99';
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120"><rect width="160" height="120" fill="#e6f6fa"/>' +
+      '<path d="M0 98 Q40 90 80 98 T160 98 V120 H0Z" fill="#f4e7cf"/>' +
+      '<circle cx="40" cy="88" r="15" fill="#17323f"/><circle cx="40" cy="88" r="6" fill="#ccd"/>' +
+      '<circle cx="122" cy="88" r="15" fill="#17323f"/><circle cx="122" cy="88" r="6" fill="#ccd"/>' +
+      '<path d="M30 78 Q34 58 62 58 H92 L100 78 Z" fill="' + color + '"/>' +
+      '<path d="M58 52 H90 Q96 52 94 58 H56 Q54 52 58 52Z" fill="#17323f"/>' +
+      '<path d="M98 78 L110 34 H118 L106 80 Z" fill="' + color + '"/>' +
+      '<path d="M104 30 H126" stroke="#17323f" stroke-width="5" stroke-linecap="round"/>' +
+      '<path d="M100 78 Q118 70 134 82" stroke="' + color + '" stroke-width="8" fill="none" stroke-linecap="round"/>' +
+      '<circle cx="124" cy="40" r="4" fill="#ffd36b"/></svg>';
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+  };
+  // Image URLs. Names are server-generated hex filenames; the standalone demo overrides these.
+  UI.mediaUrl = function (name) { return '/media/' + encodeURIComponent(name); };
+  UI.fileUrl = function (name) { return '/api/admin/files/' + encodeURIComponent(name); };
+  UI.unitPhoto = function (u) { return u && u.photo ? UI.mediaUrl(u.photo) : UI.scooterArt(u && u.color); };
+
+  window.UI = UI;
+})();
+
+;
+/* Booking business rules, shared by the Node server and the standalone browser demo.
+   Pure functions over a plain data object { settings, units, bookings, counter }; no I/O.
+   Errors are thrown as Error objects with a numeric .status (HTTP-style). */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./shared'));
+  else root.CORE = factory(root.BAY);
+})(typeof self !== 'undefined' ? self : this, function (BAY) {
+  'use strict';
+  const IMAGE_NAME = /^[a-f0-9]{24}\.(jpg|png|webp)$/;
+
+  function fail(status, message) { const e = new Error(message); e.status = status; throw e; }
+  const str = (v, max = 200) => String(v == null ? '' : v).trim().slice(0, max);
+  const num = (v, min = 0, max = 1e7) => { const n = Number(v); return isFinite(n) ? Math.min(max, Math.max(min, Math.round(n))) : min; };
+  function randomId(len) {
+    let s = '';
+    const c = typeof crypto !== 'undefined' && crypto.getRandomValues ? crypto.getRandomValues(new Uint8Array(len)) : null;
+    for (let i = 0; i < len; i++) s += ((c ? c[i] : Math.random() * 256) & 255).toString(16).padStart(2, '0');
+    return s;
+  }
+
+  // ---------- defaults & sample data (all prices are SAMPLES, editable in Admin) ----------
+  function defaultSettings() {
+    return {
+      shopName: 'Baybayin Scooter Rental',
+      tagline: 'Explore San Agustin & Tablas Island on two wheels',
+      intro: 'Fresh off the ferry? Grab a well-maintained scooter and ride to the falls, beaches and viewpoints of Tablas at your own pace. Helmets included. Mabuhay!',
+      address: 'Sitio Sawang, Brgy. Dubduban, San Agustin, Romblon',
+      landmark: 'Beside the FilOil gas station and Mon\'s Pahuway Café',
+      mapsUrl: 'https://www.google.com/maps/search/?api=1&query=FilOil+Dubduban+San+Agustin+Romblon',
+      phone: '0917 000 0000',
+      messengerUrl: 'https://m.me/yourpage',
+      gcashNumber: '0917 000 0000',
+      gcashName: 'BAYBAYIN S. R.',
+      gcashQr: null,
+      gallery: [],
+      openTime: '09:00',
+      closeTime: '18:00',
+      slotMinutes: 30,
+      leadMinutes: 60,       // earliest pickup = now + this
+      bufferMinutes: 60,     // turnaround time between rentals of the same unit
+      graceMinutes: 60,      // extra minutes allowed before another day is charged
+      minHours: 2,
+      maxDays: 30,
+      halfDayHours: 6,
+      multiDayMinDays: 3,
+      deposit: 1000,
+      lateFeePerHour: 100,
+      freeCancelHours: 24,
+      maxRiders: 2,
+      adminEmail: '',
+      addons: [
+        { id: 'helmet', name: 'Extra helmet', price: 50, perDay: false, maxQty: 2, active: true },
+        { id: 'holder', name: 'Phone holder', price: 30, perDay: false, maxQty: 1, active: true },
+        { id: 'delivery', name: 'Delivery to port / resort', price: 150, perDay: false, maxQty: 1, active: true }
+      ],
+      terms: [
+        'A valid driver\'s license is required. Please bring the original at pickup.',
+        'Helmets must be worn at all times by the driver and passenger.',
+        'The renter is responsible for any damage, loss, and traffic violations during the rental.',
+        'Return the scooter with the same fuel level as pickup.',
+        'Late returns are charged {lateFee} per hour.',
+        'A refundable security deposit of {deposit} is collected at pickup and returned when the scooter comes back in good condition.',
+        'Free cancellation up to {cancelHours} hours before pickup. Please message us on Messenger to cancel.'
+      ]
+    };
+  }
+
+  function defaultUnits() {
+    const u = (id, name, plate, color, daily, half, multi, desc, status) => ({
+      id, name, plate, color, photo: null, dailyRate: daily, halfDayRate: half, multiDayRate: multi,
+      description: desc, status: status || 'available'
+    });
+    return [
+      u('u1', 'Honda Click 125', 'ABC 1234', '#e74c3c', 500, 350, 450, '125cc automatic · easy and fuel-efficient · fits 2'),
+      u('u2', 'Honda Click 125', 'ABC 5678', '#2c3e50', 500, 350, 450, '125cc automatic · easy and fuel-efficient · fits 2'),
+      u('u3', 'Yamaha NMAX V3', 'NMX 2025', '#1f6fb2', 800, 550, 700, '155cc · comfy for long rides around Tablas · ABS'),
+      u('u4', 'Honda PCX 160', 'PCX 1600', '#7f8c8d', 800, 550, 700, '160cc · smooth, roomy seat and storage'),
+      u('u5', 'Honda BeAT', 'BTT 1100', '#f39c12', 400, 300, 350, '110cc · light and nimble · perfect for town trips', 'maintenance')
+    ];
+  }
+
+  function sampleBookings(settings, units, genId) {
+    const t = BAY.today();
+    const d = (n) => BAY.addDays(t, n);
+    const mk = (n, unitId, pickup, ret, status, cust, addons, pay, extra) => {
+      const unit = units.find((x) => x.id === unitId);
+      return Object.assign({
+        id: genId(),
+        ref: 'BAY-' + String(n).padStart(4, '0'),
+        createdAt: new Date(Date.now() - (10 - n) * 86400e3).toISOString(),
+        status, scooterId: unitId, model: unit.name, pickup, return: ret,
+        addonSel: addons, quote: BAY.quote(unit, pickup, ret, addons, settings),
+        customer: Object.assign({ email: '', riders: 1 }, cust),
+        licensePhoto: null,
+        payment: Object.assign({ method: 'cash', gcashRef: '', proof: null, status: 'unpaid' }, pay),
+        deposit: 'pending', notes: '', history: [{ at: new Date().toISOString(), status }], sample: true
+      }, extra || {});
+    };
+    return [
+      mk(1, 'u1', d(-6) + 'T09:00', d(-4) + 'T17:00', 'returned',
+        { name: 'Maria Santos', mobile: '09171234567', fb: 'Maria Santos', stayingAt: 'Tablas Bay Inn', riders: 2 },
+        { helmet: 1 }, { status: 'paid' }, { deposit: 'refunded' }),
+      mk(2, 'u3', d(-2) + 'T10:00', d(1) + 'T10:00', 'picked_up',
+        { name: 'Jake Miller', mobile: '09181112222', email: 'jake@example.com', fb: 'Jake Miller', stayingAt: 'Cantingas homestay' },
+        { holder: 1 }, { method: 'gcash', gcashRef: '1009 876 543210', status: 'paid' }, { deposit: 'collected' }),
+      mk(3, 'u2', d(1) + 'T09:30', d(2) + 'T09:30', 'confirmed',
+        { name: 'Paolo Reyes', mobile: '09209998888', fb: 'Pao Reyes', stayingAt: 'Arriving by RoRo from Batangas', riders: 2 },
+        { helmet: 1, delivery: 1 }, {}),
+      mk(4, 'u4', d(5) + 'T13:00', d(5) + 'T18:00', 'pending',
+        { name: 'Anna Lim', mobile: '09175556666', fb: 'Anna Lim', stayingAt: 'San Agustin town proper' },
+        {}, { method: 'gcash', gcashRef: '5021 333 444555', status: 'unpaid' }),
+      mk(5, 'u1', d(4) + 'T09:00', d(8) + 'T09:00', 'pending',
+        { name: 'Lukas Weber', mobile: '09271239876', email: 'lukas@example.com', fb: 'Lukas Weber', stayingAt: 'Looc resort', riders: 1 },
+        { holder: 1 }, {}),
+      mk(6, 'u3', d(4) + 'T09:00', d(5) + 'T09:00', 'cancelled',
+        { name: 'Grace Tan', mobile: '09391110000', fb: 'Grace T', stayingAt: 'Odiongan' }, {}, {})
+    ];
+  }
+
+  function buildSeedData(genId) {
+    genId = genId || (() => randomId(6));
+    const settings = defaultSettings();
+    const units = defaultUnits();
+    const bookings = sampleBookings(settings, units, genId);
+    units.find((u) => u.id === 'u3').status = 'rented'; // matches the picked-up sample booking
+    return { version: 1, counter: bookings.length, settings, units, bookings };
+  }
+
+  // ---------- views ----------
+  function publicSettings(data) { const { adminEmail, ...rest } = data.settings; return rest; }
+  function publicUnit(u) { const { plate, ...rest } = u; return rest; }
+  function publicView(b) {
+    return {
+      ref: b.ref, status: b.status, model: b.model, pickup: b.pickup, return: b.return,
+      quote: b.quote, payment: { method: b.payment.method, status: b.payment.status },
+      customer: { name: b.customer.name }, createdAt: b.createdAt
+    };
+  }
+
+  // ---------- availability ----------
+  function unitBusy(data, unitId, pickup, ret, excludeId) {
+    return data.bookings.some((b) => b.scooterId === unitId && b.id !== excludeId &&
+      BAY.ACTIVE_STATUSES.includes(b.status) && BAY.overlaps(pickup, ret, b.pickup, b.return, data.settings.bufferMinutes));
+  }
+  function freeUnits(data, pickup, ret, excludeId) {
+    return data.units.filter((u) => u.status !== 'maintenance' && !unitBusy(data, u.id, pickup, ret, excludeId));
+  }
+  /** Fleet grouped by model name for the customer view. */
+  function availability(data, pickup, ret) {
+    const err = BAY.validateWindow(pickup, ret, data.settings);
+    if (err) fail(400, err);
+    const free = new Set(freeUnits(data, pickup, ret).map((u) => u.id));
+    const groups = new Map();
+    data.units.forEach((u) => {
+      if (!groups.has(u.name)) groups.set(u.name, { model: u.name, total: 0, available: 0, unit: null, first: u });
+      const g = groups.get(u.name);
+      if (u.status !== 'maintenance') g.total++;
+      if (free.has(u.id)) { g.available++; if (!g.unit) g.unit = u; }
+    });
+    return [...groups.values()].filter((g) => g.total > 0).map((g) => {
+      const u = g.unit || g.first;
+      return { model: g.model, available: g.available, total: g.total, unit: publicUnit(u), quote: BAY.quote(u, pickup, ret, {}, data.settings) };
+    }).sort((a, b) => (b.available > 0) - (a.available > 0) || a.unit.dailyRate - b.unit.dailyRate);
+  }
+
+  // ---------- bookings ----------
+  /**
+   * Validate a customer booking request. Returns a "draft" (everything except saved image names)
+   * or throws. Does not mutate data. Caller then saves images and calls commitBooking().
+   */
+  function prepareBooking(data, body) {
+    const s = data.settings;
+    const pickup = str(body.pickup, 16), ret = str(body.return, 16);
+    const err = BAY.validateWindow(pickup, ret, s);
+    if (err) fail(400, err);
+    const c = body.customer || {};
+    const customer = {
+      name: str(c.name, 80), mobile: str(c.mobile, 20).replace(/[^\d+]/g, ''), email: str(c.email, 120),
+      fb: str(c.fb, 80), stayingAt: str(c.stayingAt, 120), riders: num(c.riders, 1, s.maxRiders || 2)
+    };
+    if (customer.name.length < 2) fail(400, 'Please enter your full name.');
+    if (!/^(\+?63|0)9\d{9}$/.test(customer.mobile) && !/^\+\d{8,15}$/.test(customer.mobile)) {
+      fail(400, 'Please enter a valid mobile number (e.g. 0917 123 4567).');
+    }
+    if (customer.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(customer.email)) fail(400, 'Please check your email address.');
+    if (!body.agreeTerms) fail(400, 'Please agree to the rental terms.');
+    if (!body.license) fail(400, 'Please upload a photo of your driver\'s license.');
+    const method = body.payment && body.payment.method === 'gcash' ? 'gcash' : 'cash';
+    const gcashRef = method === 'gcash' ? str(body.payment.gcashRef, 40) : '';
+    if (method === 'gcash' && gcashRef.replace(/\D/g, '').length < 6) fail(400, 'Please enter your GCash reference number.');
+    if (method === 'gcash' && !body.payment.proof) fail(400, 'Please upload your GCash payment screenshot.');
+    const addonSel = {};
+    Object.entries(body.addons || {}).forEach(([k, v]) => { addonSel[str(k, 40)] = num(v, 0, 10); });
+    return { pickup, ret, customer, method, gcashRef, addonSel, model: str(body.model, 80) };
+  }
+  /** Re-check availability and store the booking. Must run synchronously after the final check (no double-booking race). */
+  function commitBooking(data, draft, files, genId) {
+    const unit = freeUnits(data, draft.pickup, draft.ret).find((u) => u.name === draft.model);
+    if (!unit) fail(409, 'Sorry, that scooter was just booked for those dates. Please pick another one.');
+    data.counter = (data.counter || 0) + 1;
+    const now = new Date().toISOString();
+    const booking = {
+      id: (genId || (() => randomId(6)))(), ref: 'BAY-' + String(data.counter).padStart(4, '0'), createdAt: now, status: 'pending',
+      scooterId: unit.id, model: unit.name, pickup: draft.pickup, return: draft.ret,
+      addonSel: draft.addonSel, quote: BAY.quote(unit, draft.pickup, draft.ret, draft.addonSel, data.settings),
+      customer: draft.customer, licensePhoto: files.licensePhoto || null,
+      payment: { method: draft.method, gcashRef: draft.gcashRef, proof: files.proof || null, status: 'unpaid' },
+      deposit: 'pending', notes: '', history: [{ at: now, status: 'pending' }]
+    };
+    data.bookings.push(booking);
+    return booking;
+  }
+  function hasFreeUnit(data, draft) {
+    return freeUnits(data, draft.pickup, draft.ret).some((u) => u.name === draft.model);
+  }
+
+  function lookup(data, ref, mobile) {
+    ref = String(ref || '').trim().toUpperCase();
+    mobile = String(mobile || '').replace(/\D/g, '').slice(-10);
+    const b = data.bookings.find((x) => x.ref === ref && x.customer.mobile.replace(/\D/g, '').slice(-10) === mobile);
+    if (!b) fail(404, 'No booking found with that reference and mobile number.');
+    return publicView(b);
+  }
+
+  /** Admin changes to a booking (status, unit, deposit, payment, notes). */
+  function updateBooking(data, id, body) {
+    const b = data.bookings.find((x) => x.id === id);
+    if (!b) fail(404, 'Booking not found');
+    if (body.scooterId && body.scooterId !== b.scooterId) {
+      const u = data.units.find((x) => x.id === body.scooterId);
+      if (!u) fail(400, 'Unknown scooter');
+      if (unitBusy(data, u.id, b.pickup, b.return, b.id)) fail(409, `${u.name} (${u.plate}) is already booked during this time.`);
+      b.scooterId = u.id; b.model = u.name;
+      b.quote = BAY.quote(u, b.pickup, b.return, b.addonSel, data.settings);
+    }
+    if (body.status && body.status !== b.status) {
+      if (!BAY.STATUS_LABELS[body.status]) fail(400, 'Bad status');
+      if (BAY.ACTIVE_STATUSES.includes(body.status) && !BAY.ACTIVE_STATUSES.includes(b.status) && unitBusy(data, b.scooterId, b.pickup, b.return, b.id)) {
+        fail(409, 'This scooter is now booked by someone else for these dates. Reassign a scooter first.');
+      }
+      b.status = body.status;
+      b.history.push({ at: new Date().toISOString(), status: b.status });
+      const unit = data.units.find((u) => u.id === b.scooterId);
+      if (unit && b.status === 'picked_up') unit.status = 'rented';
+      if (unit && ['returned', 'cancelled'].includes(b.status) && unit.status === 'rented') unit.status = 'available';
+    }
+    if (body.deposit && ['pending', 'collected', 'refunded'].includes(body.deposit)) b.deposit = body.deposit;
+    if (body.paymentStatus && ['unpaid', 'paid'].includes(body.paymentStatus)) b.payment.status = body.paymentStatus;
+    if (typeof body.notes === 'string') b.notes = str(body.notes, 1000);
+    return b;
+  }
+
+  // ---------- fleet & settings ----------
+  function cleanUnit(body, existing, genId) {
+    existing = existing || {};
+    const status = ['available', 'rented', 'maintenance'].includes(body.status) ? body.status : (existing.status || 'available');
+    return {
+      id: existing.id || (genId || (() => randomId(6)))(),
+      name: str(body.name, 60) || existing.name || 'Scooter',
+      plate: str(body.plate, 20),
+      color: /^#[0-9a-f]{6}$/i.test(body.color || '') ? body.color : (existing.color || '#1f6fb2'),
+      photo: body.photo === null ? null : (typeof body.photo === 'string' && IMAGE_NAME.test(body.photo) ? body.photo : existing.photo || null),
+      dailyRate: num(body.dailyRate, 0), halfDayRate: num(body.halfDayRate, 0), multiDayRate: num(body.multiDayRate, 0),
+      description: str(body.description, 160), status
+    };
+  }
+  function addUnit(data, body, genId) { const u = cleanUnit(body, null, genId); data.units.push(u); return u; }
+  function editUnit(data, id, body) {
+    const i = data.units.findIndex((x) => x.id === id);
+    if (i < 0) fail(404, 'Scooter not found');
+    data.units[i] = cleanUnit(body, data.units[i]);
+    return data.units[i];
+  }
+  function deleteUnit(data, id) {
+    const i = data.units.findIndex((x) => x.id === id);
+    if (i < 0) fail(404, 'Scooter not found');
+    if (data.bookings.some((b) => b.scooterId === id && BAY.ACTIVE_STATUSES.includes(b.status))) {
+      fail(409, 'This scooter has active bookings. Reassign or cancel them first, or set it to Under maintenance.');
+    }
+    data.units.splice(i, 1);
+  }
+
+  function updateSettings(data, body) {
+    const s = data.settings;
+    ['shopName', 'tagline', 'address', 'landmark', 'mapsUrl', 'phone', 'messengerUrl', 'gcashNumber', 'gcashName', 'adminEmail']
+      .forEach((k) => { if (k in body) s[k] = str(body[k], 300); });
+    if ('intro' in body) s.intro = str(body.intro, 1000);
+    ['openTime', 'closeTime'].forEach((k) => { if (/^\d{2}:\d{2}$/.test(body[k] || '')) s[k] = body[k]; });
+    const nums = { slotMinutes: [15, 120], leadMinutes: [0, 10080], bufferMinutes: [0, 1440], graceMinutes: [0, 600], minHours: [1, 48],
+      maxDays: [1, 365], halfDayHours: [1, 23], multiDayMinDays: [2, 60], deposit: [0, 1e6], lateFeePerHour: [0, 1e5],
+      freeCancelHours: [0, 720], maxRiders: [1, 3] };
+    Object.entries(nums).forEach(([k, [lo, hi]]) => { if (k in body) s[k] = num(body[k], lo, hi); });
+    if ('gcashQr' in body) s.gcashQr = body.gcashQr && IMAGE_NAME.test(body.gcashQr) ? body.gcashQr : null;
+    if (Array.isArray(body.gallery)) s.gallery = body.gallery.filter((g) => IMAGE_NAME.test(g)).slice(0, 8);
+    if (Array.isArray(body.terms)) s.terms = body.terms.map((t) => str(t, 500)).filter(Boolean).slice(0, 30);
+    if (Array.isArray(body.addons)) {
+      s.addons = body.addons.slice(0, 20).map((a) => ({
+        id: str(a.id, 40).replace(/[^a-z0-9_-]/gi, '') || randomId(6), name: str(a.name, 60) || 'Add-on',
+        price: num(a.price, 0), perDay: !!a.perDay, maxQty: num(a.maxQty, 1, 10), active: a.active !== false
+      }));
+    }
+    return s;
+  }
+
+  // ---------- reports ----------
+  function summary(data) {
+    const t = BAY.today();
+    const dow = new Date(BAY.toEpoch(t + 'T00:00') + 8 * 3600e3).getUTCDay();
+    const weekStart = BAY.addDays(t, -((dow + 6) % 7));     // Monday
+    const monthStart = t.slice(0, 8) + '01';
+    const B = data.bookings;
+    const counted = B.filter((b) => ['confirmed', 'picked_up', 'returned'].includes(b.status));
+    const period = (from, to) => {
+      const list = counted.filter((b) => b.pickup.slice(0, 10) >= from && b.pickup.slice(0, 10) <= to);
+      return { bookings: list.length, revenue: list.reduce((s, b) => s + b.quote.total, 0) };
+    };
+    const byModel = {};
+    counted.forEach((b) => { byModel[b.model] = (byModel[b.model] || 0) + 1; });
+    const top = Object.entries(byModel).sort((a, b) => b[1] - a[1])[0];
+    return {
+      week: period(weekStart, BAY.addDays(weekStart, 6)), month: period(monthStart, t.slice(0, 8) + '31'), weekStart, monthStart,
+      topModel: top ? { model: top[0], count: top[1] } : null,
+      pending: B.filter((b) => b.status === 'pending').length,
+      depositsHeld: B.filter((b) => b.deposit === 'collected').reduce((s, b) => s + b.quote.deposit, 0),
+      outNow: B.filter((b) => b.status === 'picked_up').length,
+      pickupsToday: B.filter((b) => ['confirmed', 'pending'].includes(b.status) && b.pickup.startsWith(t)).length,
+      returnsToday: B.filter((b) => b.status === 'picked_up' && b.return.startsWith(t)).length
+    };
+  }
+
+  function exportCsv(data) {
+    const unitById = Object.fromEntries(data.units.map((u) => [u.id, u]));
+    const rows = [['Ref', 'Created', 'Status', 'Scooter', 'Plate', 'Pickup', 'Return', 'Name', 'Mobile', 'Email', 'Facebook', 'Staying at',
+      'Riders', 'Add-ons', 'Rental', 'Add-ons total', 'Total', 'Deposit', 'Deposit status', 'Payment', 'GCash ref', 'Payment status', 'Notes']];
+    data.bookings.slice().sort((a, b) => a.pickup.localeCompare(b.pickup)).forEach((b) => rows.push([
+      b.ref, b.createdAt, BAY.STATUS_LABELS[b.status], b.model, (unitById[b.scooterId] || {}).plate, b.pickup.replace('T', ' '), b.return.replace('T', ' '),
+      b.customer.name, b.customer.mobile, b.customer.email, b.customer.fb, b.customer.stayingAt, b.customer.riders,
+      b.quote.addons.map((a) => a.name + ' x' + a.qty).join('; '), b.quote.rental, b.quote.addonsTotal, b.quote.total,
+      b.quote.deposit, b.deposit, b.payment.method, b.payment.gcashRef, b.payment.status, b.notes
+    ]));
+    return '﻿' + rows.map((r) => r.map((v) => {
+      let s = String(v == null ? '' : v);
+      if (/^[=+\-@]/.test(s)) s = "'" + s;                 // avoid spreadsheet formula injection
+      return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }).join(',')).join('\r\n');
+  }
+
+  // ---------- message templates (plain text, SMS / Messenger friendly) ----------
+  function addonText(b) {
+    return b.quote.addons.length ? b.quote.addons.map((a) => a.name + (a.qty > 1 ? ' ×' + a.qty : '')).join(', ') : 'none';
+  }
+  function adminAlert(b) {
+    return [
+      `🛵 NEW BOOKING ${b.ref}`,
+      `${b.model}`,
+      `Pickup: ${BAY.fmtLocal(b.pickup)}`,
+      `Return: ${BAY.fmtLocal(b.return)}`,
+      `Name: ${b.customer.name} (${b.customer.riders} rider${b.customer.riders > 1 ? 's' : ''})`,
+      `Mobile: ${b.customer.mobile}`,
+      `FB: ${b.customer.fb || '-'}`,
+      `Staying at: ${b.customer.stayingAt || '-'}`,
+      `Add-ons: ${addonText(b)}`,
+      `Total: ${BAY.peso(b.quote.total)} + ${BAY.peso(b.quote.deposit)} deposit`,
+      `Payment: ${b.payment.method === 'gcash' ? 'GCash ref ' + (b.payment.gcashRef || '-') : 'Cash at pickup'}`
+    ].join('\n');
+  }
+  function customerConfirmation(b, s) {
+    const first = (b.customer.name || '').split(' ')[0] || 'there';
+    return [
+      `Hi ${first}! Your scooter booking ${b.ref} with ${s.shopName} is CONFIRMED. 🛵`,
+      ``,
+      `Scooter: ${b.model}`,
+      `Pickup: ${BAY.fmtLocal(b.pickup)}`,
+      `Return: ${BAY.fmtLocal(b.return)}`,
+      `Add-ons: ${addonText(b)}`,
+      `Rental total: ${BAY.peso(b.quote.total)}${b.payment.method === 'gcash' && b.payment.status === 'paid' ? ' (paid via GCash, salamat!)' : ''}`,
+      `Refundable deposit: ${BAY.peso(b.quote.deposit)} (cash at pickup)`,
+      ``,
+      `📍 ${s.address} — ${s.landmark}`,
+      `Map: ${s.mapsUrl}`,
+      `Please bring your original driver's license. See you soon — Salamat po!`
+    ].join('\n');
+  }
+  function messages(data, id) {
+    const b = data.bookings.find((x) => x.id === id);
+    if (!b) fail(404, 'Not found');
+    return { admin: adminAlert(b), customer: customerConfirmation(b, data.settings) };
+  }
+
+  return {
+    IMAGE_NAME, fail, randomId,
+    defaultSettings, defaultUnits, buildSeedData,
+    publicSettings, publicUnit, publicView,
+    unitBusy, freeUnits, availability,
+    prepareBooking, hasFreeUnit, commitBooking, lookup, updateBooking,
+    addUnit, editUnit, deleteUnit, updateSettings,
+    summary, exportCsv, adminAlert, customerConfirmation, messages
+  };
+});
+
+;
+/* Standalone demo backend: answers the app's API calls inside the browser using core.js,
+   storing data and images in localStorage (falls back to memory when storage is blocked).
+   Only used by the single-file demo build (npm run build:demo). Not for production:
+   data lives on one device, and the admin password is checked in the browser. */
+(function () {
+  'use strict';
+  var DEMO_PASSWORD = 'baybayin2026';
+  var KEY = 'bay_demo_db_v1', IMG = 'bay_demo_img_', ADMIN = 'bay_demo_admin';
+  var mem = {};
+  var store = {
+    get: function (k) { try { var v = localStorage.getItem(k); return v === null ? (k in mem ? mem[k] : null) : v; } catch (e) { return k in mem ? mem[k] : null; } },
+    set: function (k, v) {
+      try { localStorage.setItem(k, v); } catch (e) {
+        if (e && /quota/i.test(e.name + e.message)) { var err = new Error('Demo storage is full. Tap "Reset demo" to clear it.'); err.status = 413; throw err; }
+        mem[k] = v;
+      }
+    },
+    del: function (k) { try { localStorage.removeItem(k); } catch (e) {} delete mem[k]; }
+  };
+  var session = {
+    get: function () { try { return sessionStorage.getItem(ADMIN) === '1'; } catch (e) { return !!mem[ADMIN]; } },
+    set: function (on) { try { on ? sessionStorage.setItem(ADMIN, '1') : sessionStorage.removeItem(ADMIN); } catch (e) { mem[ADMIN] = on; } }
+  };
+
+  var data;
+  try { data = JSON.parse(store.get(KEY)); } catch (e) { data = null; }
+  if (!data || !data.settings) { data = CORE.buildSeedData(); data.demoPassword = DEMO_PASSWORD; save(); }
+  function save() { store.set(KEY, JSON.stringify(data)); }
+  function clone(x) { return JSON.parse(JSON.stringify(x)); }
+
+  function saveImage(dataUrl) {
+    var m = /^data:image\/(jpeg|png|webp);base64,/.exec(dataUrl || '');
+    if (!m) CORE.fail(400, 'Please upload a JPG or PNG image.');
+    var name = CORE.randomId(12) + (m[1] === 'jpeg' ? '.jpg' : '.' + m[1]);
+    store.set(IMG + name, dataUrl);
+    return name;
+  }
+
+  function route(method, url, body) {
+    var u = new URL(url, 'http://demo');
+    var p = u.pathname, q = u.searchParams, mm;
+    body = body || {};
+    if (p === '/api/config') return { settings: CORE.publicSettings(data), units: data.units.map(CORE.publicUnit), now: BAY.nowLocal() };
+    if (p === '/api/availability') return { models: CORE.availability(data, q.get('pickup') || '', q.get('return') || '') };
+    if (p === '/api/bookings' && method === 'POST') {
+      var draft = CORE.prepareBooking(data, body);
+      if (!CORE.hasFreeUnit(data, draft)) CORE.fail(409, 'Sorry, that scooter was just booked for those dates. Please pick another one.');
+      var files = { licensePhoto: saveImage(body.license), proof: draft.method === 'gcash' ? saveImage(body.payment.proof) : null };
+      var b = CORE.commitBooking(data, draft, files);
+      save();
+      return { booking: CORE.publicView(b) };
+    }
+    if (p === '/api/bookings/lookup') return { booking: CORE.lookup(data, q.get('ref'), q.get('mobile')) };
+    if (p === '/api/admin/login') {
+      if (String(body.password || '') !== (data.demoPassword || DEMO_PASSWORD)) CORE.fail(401, 'Wrong password. (Demo password: ' + DEMO_PASSWORD + ')');
+      session.set(true); return { ok: true };
+    }
+    if (p === '/api/admin/logout') { session.set(false); return { ok: true }; }
+    if (p.indexOf('/api/admin/') === 0) {
+      if (!session.get()) CORE.fail(401, 'Please log in.');
+      var sub = p.slice(11), res;
+      if (sub === 'me') return { ok: true };
+      if (sub === 'data') { var d = clone(data); delete d.demoPassword; d.summary = CORE.summary(data); d.now = BAY.nowLocal(); return d; }
+      if ((mm = /^bookings\/([a-f0-9]+)$/.exec(sub))) { res = CORE.updateBooking(data, mm[1], body); save(); return { booking: res }; }
+      if ((mm = /^bookings\/([a-f0-9]+)\/messages$/.exec(sub))) return CORE.messages(data, mm[1]);
+      if (sub === 'units' && method === 'POST') { res = CORE.addUnit(data, body); save(); return { unit: res }; }
+      if ((mm = /^units\/([a-z0-9]+)$/.exec(sub))) {
+        if (method === 'PUT') { res = CORE.editUnit(data, mm[1], body); save(); return { unit: res }; }
+        if (method === 'DELETE') { CORE.deleteUnit(data, mm[1]); save(); return { ok: true }; }
+      }
+      if (sub === 'settings') { res = CORE.updateSettings(data, body); save(); return { settings: res }; }
+      if (sub === 'password') {
+        if (String(body.password || '').length < 8) CORE.fail(400, 'Use at least 8 characters.');
+        data.demoPassword = body.password; save(); return { ok: true };
+      }
+      if (sub === 'upload') return { file: saveImage(body.dataUrl) };
+    }
+    CORE.fail(404, 'Not found');
+  }
+
+  UI.api = function (method, url, body) {
+    return new Promise(function (resolve, reject) {
+      setTimeout(function () {   // async like a real request
+        try { resolve(clone(route(method, url, body === undefined ? undefined : clone(body)) || {})); }
+        catch (e) { if (!e.status) { console.error(e); e = new Error('Something went wrong. Please try again.'); } reject(e); }
+      }, 60);
+    });
+  };
+  UI.mediaUrl = UI.fileUrl = function (name) { return store.get(IMG + name) || ''; };
+  UI.exportCsv = function () {
+    var blob = new Blob([CORE.exportCsv(data)], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'baybayin-bookings-' + BAY.today() + '.csv';
+    document.body.appendChild(a); a.click(); a.parentNode.removeChild(a);
+  };
+  window.BAY_DEMO = {
+    reset: function () {
+      try { Object.keys(localStorage).forEach(function (k) { if (k.indexOf('bay_') === 0) localStorage.removeItem(k); }); } catch (e) {}
+      try { sessionStorage.clear(); } catch (e) {}
+      mem = {};
+      store.del(KEY);
+    },
+    password: DEMO_PASSWORD
+  };
+})();
+
+;
+function RUN_CUSTOMER() {
+/* Customer booking flow (vanilla JS, hash routing). */
+(function () {
+  'use strict';
+  var $ = UI.$, $$ = UI.$$, esc = UI.esc, peso = BAY.peso;
+  var app = $('#app');
+  var CFG = null;             // { settings, units }
+  var S = loadState();        // booking-in-progress
+  var models = null;          // availability results for current window
+  var files = { license: null, proof: null };   // compressed data URLs (kept in memory only)
+  var STEPS = ['When', 'Scooter', 'Extras', 'Your details', 'Payment'];
+
+  function blankState() {
+    return { step: 0, pickupDate: '', pickupTime: '', returnDate: '', returnTime: '', model: '', addons: {},
+      customer: { name: '', mobile: '', email: '', fb: '', stayingAt: '', riders: 1 }, agree: false,
+      payMethod: 'cash', gcashRef: '' };
+  }
+  function loadState() {
+    try { var s = JSON.parse(sessionStorage.getItem('bay_state')); if (s && s.customer) return s; } catch (e) {}
+    return blankState();
+  }
+  function saveState() { try { sessionStorage.setItem('bay_state', JSON.stringify(S)); } catch (e) {} }
+  function pickup() { return S.pickupDate && S.pickupTime ? S.pickupDate + 'T' + S.pickupTime : ''; }
+  function ret() { return S.returnDate && S.returnTime ? S.returnDate + 'T' + S.returnTime : ''; }
+  function chosen() { return models && models.filter(function (m) { return m.model === S.model && m.available > 0; })[0]; }
+  function currentQuote() {
+    var m = chosen();
+    return m ? BAY.quote(m.unit, pickup(), ret(), S.addons, CFG.settings) : null;
+  }
+
+  // ---------- boot ----------
+  UI.api('GET', '/api/config').then(function (cfg) {
+    CFG = cfg;
+    $('#brandName').textContent = cfg.settings.shopName;
+    window.addEventListener('hashchange', route);
+    route();
+  }).catch(function (e) {
+    app.innerHTML = '<div class="wrap"><div class="err-box">' + esc(e.message) + '</div><button class="btn" onclick="location.reload()">Try again</button></div>';
+  });
+
+  function route() {
+    var h = location.hash.replace(/^#\/?/, '');
+    $$('.modal').forEach(function (m) { m.remove(); });
+    window.scrollTo(0, 0);
+    document.body.classList.remove('has-bar');
+    if (h === 'book') return renderStep();
+    if (h === 'done') return renderDone();
+    if (h === 'lookup') return renderLookup();
+    return renderHome();
+  }
+
+  // ---------- landing ----------
+  function renderHome() {
+    var s = CFG.settings;
+    var byModel = {};
+    CFG.units.forEach(function (u) { if (u.status !== 'maintenance' && !byModel[u.name]) byModel[u.name] = u; });
+    var fleet = Object.keys(byModel).map(function (k) {
+      var u = byModel[k];
+      return '<div class="card"><img class="scooter-img" loading="lazy" alt="' + esc(u.name) + '" src="' + UI.unitPhoto(u) + '">' +
+        '<div class="name">' + esc(u.name) + '</div><div class="small muted">from <b>' + peso(u.halfDayRate || u.dailyRate) + '</b></div></div>';
+    }).join('');
+    var gallery = (s.gallery || []).map(function (g) { return '<img loading="lazy" alt="Shop photo" src="' + UI.mediaUrl(g) + '">'; }).join('');
+    app.innerHTML =
+      '<div class="hero"><div class="wrap">' +
+        '<h1>' + esc(s.shopName) + '</h1><p class="tag">' + esc(s.tagline) + '</p>' +
+        heroArt() +
+        '<a class="btn big" href="#/book" id="bookBtn">🛵 Book a Scooter</a>' +
+        '<div class="chips"><span class="chip">🕘 ' + BAY.fmtTime(s.openTime) + ' – ' + BAY.fmtTime(s.closeTime) + ' daily</span>' +
+        '<span class="chip">⛑️ Helmet included</span><span class="chip">💵 Cash or GCash</span></div>' +
+      '</div></div>' +
+      '<section><div class="wrap"><p>' + esc(s.intro) + '</p></div></section>' +
+      '<section><div class="wrap"><h2>Our scooters</h2><div class="fleet-mini">' + fleet + '</div>' +
+        '<p class="small muted" style="margin-top:8px">Refundable deposit ' + peso(s.deposit) + '. Multi-day discounts for ' + s.multiDayMinDays + '+ days.</p></div></section>' +
+      (gallery ? '<section><div class="wrap"><h2>Photos</h2><div class="gallery">' + gallery + '</div></div></section>' : '') +
+      '<section><div class="wrap"><h2>Find us</h2><div class="card"><ul class="info-list">' +
+        '<li><span class="ico">📍</span><div><b>' + esc(s.address) + '</b><div class="small muted">' + esc(s.landmark) + '</div></div></li>' +
+        '<li><span class="ico">🕘</span><div>Pickup &amp; return<div class="small muted">' + BAY.fmtTime(s.openTime) + ' – ' + BAY.fmtTime(s.closeTime) + ', every day</div></div></li>' +
+        '<li><span class="ico">⛴️</span><div>Coming by ferry or RoRo?<div class="small muted">Add port delivery and we\'ll meet you there.</div></div></li>' +
+        (s.phone ? '<li><span class="ico">📞</span><div><a href="tel:' + esc(s.phone.replace(/\s/g, '')) + '">' + esc(s.phone) + '</a></div></li>' : '') +
+      '</ul><div class="row" style="margin-top:10px"><a class="btn alt" target="_blank" rel="noopener" href="' + esc(s.mapsUrl) + '">🗺️ Directions</a>' +
+      '<a class="btn messenger" target="_blank" rel="noopener" href="' + esc(s.messengerUrl) + '">💬 Messenger</a></div></div>' +
+      '<a class="btn big" href="#/book">Book a Scooter</a></div></section>' +
+      footer();
+  }
+  function heroArt() {
+    return '<svg class="hero-art" viewBox="0 0 360 120" aria-hidden="true">' +
+      '<circle cx="300" cy="30" r="18" fill="#ffd36b"/>' +
+      '<path d="M0 70 Q60 55 120 70 T240 70 T360 70 V120 H0Z" fill="#2bb3c0" opacity=".35"/>' +
+      '<path d="M0 84 Q60 72 120 84 T240 84 T360 84 V120 H0Z" fill="#0b6e99" opacity=".55"/>' +
+      '<path d="M0 100 Q90 88 180 100 T360 100 V120 H0Z" fill="#f4e7cf"/>' +
+      '<path d="M40 100 L44 60 M44 60 Q30 52 22 58 M44 60 Q56 50 66 56 M44 60 Q40 46 30 44 M44 60 Q52 44 62 44" stroke="#3c7a3a" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '</svg>';
+  }
+  function footer() {
+    var s = CFG.settings;
+    return '<footer class="site"><div class="wrap"><b>' + esc(s.shopName) + '</b><br>' + esc(s.address) + '<br>' +
+      '<a href="#/lookup">Find my booking</a> · <a href="#" data-terms>Rental terms</a><br><span class="small">Salamat po sa pagbisita! 🌴</span></div></footer>';
+  }
+  app.addEventListener('click', function (e) {
+    if (e.target.closest('[data-terms]')) { e.preventDefault(); showTerms(); }
+  });
+  function showTerms() {
+    var s = CFG.settings;
+    UI.modal('Rental terms', '<ol class="terms">' + s.terms.map(function (t) { return '<li>' + esc(BAY.fillTerms(t, s)) + '</li>'; }).join('') +
+      '</ol><button class="btn" data-close>Got it</button>');
+  }
+
+  // ---------- booking steps ----------
+  function stepHeader() {
+    return '<div class="steps">' + STEPS.map(function (_, i) { return '<i class="' + (i <= S.step ? 'on' : '') + '"></i>'; }).join('') + '</div>' +
+      '<div class="step-title">Step ' + (S.step + 1) + ' of ' + STEPS.length + ' · ' + STEPS[S.step] + '</div>';
+  }
+  function bar(label, opts) {
+    opts = opts || {};
+    var q = currentQuote();
+    return '<div class="bottombar"><div class="wrap">' +
+      (S.step > 0 ? '<button class="btn alt back" data-back aria-label="Back">←</button>' : '') +
+      '<div class="sum">' + (q ? '<span class="small muted">Total</span><b id="barTotal">' + peso(q.total) + '</b>' : '<span class="small muted">' + esc(opts.hint || '') + '</span>') + '</div>' +
+      '<button class="btn" data-next ' + (opts.disabled ? 'disabled' : '') + '>' + esc(label) + '</button></div></div>';
+  }
+  function go(step) { S.step = step; saveState(); renderStep(); window.scrollTo(0, 0); }
+
+  function renderStep() {
+    if (!CFG) return;
+    if (S.step > 0 && BAY.validateWindow(pickup(), ret(), CFG.settings)) S.step = 0;
+    if (S.step > 1 && !chosen()) { if (!models) return loadModels().then(renderStep, function () { go(0); }); S.step = Math.min(S.step, 1); }
+    document.body.classList.add('has-bar');
+    [stepWhen, stepScooter, stepExtras, stepDetails, stepPayment][S.step]();
+  }
+
+  // Step 1 — dates
+  function defaultDates() {
+    var s = CFG.settings, slots = BAY.timeSlots(s);
+    var earliest = BAY.fromEpoch(Date.now() + (s.leadMinutes || 0) * 60e3);
+    var d = BAY.today(), t = slots.filter(function (x) { return d + 'T' + x >= earliest; })[0];
+    if (!t || !BAY.withinHours(d + 'T' + t, s.openTime, s.closeTime)) { d = BAY.addDays(d, 1); t = slots[0]; }
+    if (BAY.minutesOf(t) < BAY.minutesOf('09:00') && slots.indexOf('09:00') >= 0) t = '09:00';
+    S.pickupDate = d; S.pickupTime = t; S.returnDate = BAY.addDays(d, 1); S.returnTime = t;
+  }
+  function stepWhen() {
+    var s = CFG.settings;
+    if (!S.pickupDate) defaultDates();
+    var slots = BAY.timeSlots(s);
+    var opt = function (sel) { return slots.map(function (t) { return '<option value="' + t + '"' + (t === sel ? ' selected' : '') + '>' + BAY.fmtTime(t) + '</option>'; }).join(''); };
+    var today = BAY.today();
+    app.innerHTML = '<div class="wrap">' + stepHeader() +
+      '<h2>When do you need it?</h2>' +
+      '<p class="small muted">Pickup &amp; return at our shop, ' + BAY.fmtTime(s.openTime) + ' – ' + BAY.fmtTime(s.closeTime) + ' (Philippine time).</p>' +
+      '<div class="card"><h3>🛵 Pickup</h3><div class="row">' +
+        '<input type="date" id="pDate" min="' + today + '" value="' + S.pickupDate + '" aria-label="Pickup date">' +
+        '<select id="pTime" aria-label="Pickup time">' + opt(S.pickupTime) + '</select></div></div>' +
+      '<label class="f">How long?</label><div class="quick" id="quick">' +
+        '<button data-h="half">Half day</button><button data-d="1">1 day</button><button data-d="2">2 days</button><button data-d="3">3 days</button><button data-d="7">1 week</button></div>' +
+      '<div class="card" style="margin-top:12px"><h3>🏁 Return</h3><div class="row">' +
+        '<input type="date" id="rDate" min="' + today + '" value="' + S.returnDate + '" aria-label="Return date">' +
+        '<select id="rTime" aria-label="Return time">' + opt(S.returnTime) + '</select></div></div>' +
+      '<div id="whenMsg"></div></div>' + bar('See scooters', { hint: '' });
+    function sync() {
+      S.pickupDate = $('#pDate').value; S.pickupTime = $('#pTime').value;
+      S.returnDate = $('#rDate').value; S.returnTime = $('#rTime').value;
+      models = null; saveState();
+      var err = BAY.validateWindow(pickup(), ret(), s);
+      var hrs = err ? 0 : (BAY.toEpoch(ret()) - BAY.toEpoch(pickup())) / 36e5;
+      $('#whenMsg').innerHTML = err ? '<div class="err-box">' + esc(err) + '</div>' :
+        '<p class="center muted" style="margin-top:12px">Rental length: <b>' + BAY.durationText(hrs) + '</b></p>';
+      $('[data-next]').disabled = !!err;
+      $$('#quick button').forEach(function (b) { b.classList.remove('on'); });
+    }
+    ['#pDate', '#pTime', '#rDate', '#rTime'].forEach(function (id) { $(id).addEventListener('change', sync); });
+    $('#pDate').addEventListener('change', function () { if ($('#rDate').value < $('#pDate').value) { $('#rDate').value = BAY.addDays($('#pDate').value, 1); sync(); } });
+    $('#quick').addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      var p = $('#pDate').value + 'T' + $('#pTime').value, r;
+      if (b.dataset.h) {
+        r = BAY.addHours(p, s.halfDayHours || 6);
+        if (r.slice(0, 10) !== p.slice(0, 10) || !BAY.withinHours(r, s.openTime, s.closeTime)) r = p.slice(0, 10) + 'T' + s.closeTime;
+      } else r = BAY.addDays(p.slice(0, 10), +b.dataset.d) + 'T' + p.slice(11);
+      $('#rDate').value = r.slice(0, 10);
+      var rt = slots.indexOf(r.slice(11)) >= 0 ? r.slice(11) : slots.filter(function (x) { return x <= r.slice(11); }).pop();
+      $('#rTime').value = rt; sync(); b.classList.add('on');
+    });
+    sync();
+    $('[data-next]').onclick = function () { loadModels().then(function () { go(1); }, function (e) { $('#whenMsg').innerHTML = '<div class="err-box">' + esc(e.message) + '</div>'; }); };
+  }
+
+  function loadModels() {
+    var btn = $('[data-next]'); if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+    return UI.api('GET', '/api/availability?pickup=' + encodeURIComponent(pickup()) + '&return=' + encodeURIComponent(ret()))
+      .then(function (r) { models = r.models; return models; })
+      .finally(function () { if (btn && document.body.contains(btn)) { btn.disabled = false; btn.textContent = 'See scooters'; } });
+  }
+
+  // Step 2 — choose scooter
+  function stepScooter() {
+    if (!models) { app.innerHTML = '<div class="spinner"></div>'; return loadModels().then(stepScooter, function () { go(0); }); }
+    if (S.model && !chosen()) S.model = '';
+    var any = models.some(function (m) { return m.available > 0; });
+    app.innerHTML = '<div class="wrap">' + stepHeader() +
+      '<h2>Choose your scooter</h2><p class="small muted">' + BAY.fmtLocal(pickup()) + ' → ' + BAY.fmtLocal(ret()) + '</p>' +
+      (any ? '' : '<div class="err-box">All scooters are booked for these dates. Try different dates or message us on Messenger.</div>') +
+      models.map(function (m) {
+        var avail = m.available > 0;
+        return '<button class="pick' + (S.model === m.model ? ' on' : '') + '" data-model="' + esc(m.model) + '"' + (avail ? '' : ' disabled') + '>' +
+          '<div class="thumb"><img alt="" loading="lazy" src="' + UI.unitPhoto(m.unit) + '"></div><div class="body">' +
+          '<div class="title">' + esc(m.model) + '</div><div class="small muted">' + esc(m.unit.description || '') + '</div>' +
+          '<div class="row" style="margin-top:4px"><span class="price">' + peso(m.quote.rental) + '</span>' +
+          (avail ? '<span class="badge ok" style="flex:none">' + (m.available === 1 ? '1 left' : m.available + ' available') + '</span>' : '<span class="badge no" style="flex:none">Booked</span>') +
+          '</div><div class="small muted">' + esc(m.quote.rentalLabel) + '</div></div></button>';
+      }).join('') +
+      '<button class="btn ghost" data-back2>Change dates</button></div>' + bar('Continue', { disabled: !chosen(), hint: 'Tap a scooter' });
+    $$('.pick').forEach(function (b) {
+      b.onclick = function () { S.model = b.dataset.model; saveState(); stepScooter(); };
+    });
+    $('[data-back2]').onclick = function () { go(0); };
+    wireBar(function () { go(2); });
+  }
+
+  // Step 3 — add-ons + breakdown
+  function breakdownHTML(q) {
+    return '<table class="breakdown"><tr><td>' + esc(S.model) + '<div class="small muted">' + esc(q.rentalLabel) + '</div></td><td>' + peso(q.rental) + '</td></tr>' +
+      q.addons.map(function (a) { return '<tr><td>' + esc(a.name) + (a.qty > 1 ? ' × ' + a.qty : '') + '</td><td>' + peso(a.amount) + '</td></tr>'; }).join('') +
+      '<tr class="total"><td>Rental total</td><td>' + peso(q.total) + '</td></tr>' +
+      '<tr class="dep"><td>Refundable deposit<div class="small">paid in cash at pickup, returned after</div></td><td>' + peso(q.deposit) + '</td></tr>' +
+      '<tr class="due"><td>Bring at pickup' + (S.payMethod === 'gcash' ? ' (deposit only)' : '') + '</td><td>' + peso(S.payMethod === 'gcash' ? q.deposit : q.dueAtPickup) + '</td></tr></table>';
+  }
+  function stepExtras() {
+    var s = CFG.settings;
+    var active = s.addons.filter(function (a) { return a.active; });
+    app.innerHTML = '<div class="wrap">' + stepHeader() + '<h2>Add extras</h2>' +
+      (active.length ? '<div class="card">' + active.map(function (a) {
+        var qty = S.addons[a.id] || 0;
+        var ctrl = (a.maxQty || 1) > 1
+          ? '<div class="qty"><button data-minus="' + a.id + '" aria-label="Less">−</button><span>' + qty + '</span><button data-plus="' + a.id + '" aria-label="More">+</button></div>'
+          : '<button class="toggle' + (qty ? ' on' : '') + '" data-toggle="' + a.id + '" role="switch" aria-checked="' + !!qty + '" aria-label="' + esc(a.name) + '"></button>';
+        return '<div class="addon"><div class="name">' + esc(a.name) + '<div class="small muted">' + peso(a.price) + (a.perDay ? ' / day' : '') + '</div></div>' + ctrl + '</div>';
+      }).join('') + '</div>' : '') +
+      '<h3 style="margin-top:18px">Price breakdown</h3><div class="card sand" id="bd"></div>' +
+      '<p class="small muted">⛑️ One helmet is included. Riding with a passenger? Add an extra helmet.</p></div>' + bar('Continue');
+    function refresh() {
+      var q = currentQuote();
+      $('#bd').innerHTML = breakdownHTML(q);
+      $('#barTotal').textContent = peso(q.total);
+    }
+    $$('[data-plus],[data-minus],[data-toggle]').forEach(function (b) {
+      b.onclick = function () {
+        var id = b.dataset.plus || b.dataset.minus || b.dataset.toggle;
+        var a = s.addons.filter(function (x) { return x.id === id; })[0];
+        var q = S.addons[id] || 0;
+        if (b.dataset.toggle) q = q ? 0 : 1; else q = Math.max(0, Math.min(a.maxQty || 1, q + (b.dataset.plus ? 1 : -1)));
+        if (q) S.addons[id] = q; else delete S.addons[id];
+        saveState();
+        if (b.dataset.toggle) { b.classList.toggle('on', !!q); b.setAttribute('aria-checked', !!q); } else b.parentNode.querySelector('span').textContent = q;
+        refresh();
+      };
+    });
+    refresh();
+    wireBar(function () { go(3); });
+  }
+
+  // Step 4 — details, license, terms
+  function stepDetails() {
+    var c = S.customer, s = CFG.settings;
+    var riders = []; for (var i = 1; i <= (s.maxRiders || 2); i++) riders.push(i);
+    app.innerHTML = '<div class="wrap">' + stepHeader() + '<h2>Your details</h2>' +
+      '<label class="f" for="name">Full name</label><input id="name" autocomplete="name" value="' + esc(c.name) + '" placeholder="Juan Dela Cruz">' +
+      '<label class="f" for="mobile">Mobile number</label><input id="mobile" type="tel" inputmode="tel" autocomplete="tel" value="' + esc(c.mobile) + '" placeholder="0917 123 4567">' +
+      '<div class="hint">Foreign number? Start with + and country code.</div>' +
+      '<label class="f" for="fb">Facebook / Messenger name</label><input id="fb" value="' + esc(c.fb) + '" placeholder="So we can message you">' +
+      '<label class="f" for="stay">Where are you staying?</label><input id="stay" value="' + esc(c.stayingAt) + '" placeholder="Resort, homestay or barangay">' +
+      '<div class="quick" style="margin-top:8px" id="stayQuick"><button>Arriving by ferry</button><button>Arriving by RoRo</button><button>San Agustin town</button><button>Local resident</button></div>' +
+      '<label class="f" for="email">Email <span class="opt">(optional)</span></label><input id="email" type="email" inputmode="email" autocomplete="email" value="' + esc(c.email) + '">' +
+      '<label class="f">Number of riders</label><div class="seg" id="riders">' + riders.map(function (r) { return '<button data-r="' + r + '" class="' + (c.riders === r ? 'on' : '') + '">' + r + (r === 1 ? ' rider' : ' riders') + '</button>'; }).join('') + '</div>' +
+      '<label class="f">Driver\'s license photo</label>' +
+      '<label class="upload" id="licBox"><input type="file" accept="image/*" id="lic">' + uploadInner(files.license, 'Tap to take or upload a photo of your license') + '</label>' +
+      '<div class="hint">Clear photo of the front side. Bring the original at pickup.</div>' +
+      '<label class="check"><input type="checkbox" id="agree"' + (S.agree ? ' checked' : '') + '><span>I agree to the <a href="#" data-terms>rental terms</a> (license, helmet, damage, fuel, late fees, cancellation).</span></label>' +
+      '<div id="detMsg"></div></div>' + bar('Continue to payment');
+    function read() {
+      c.name = $('#name').value.trim(); c.mobile = $('#mobile').value.trim(); c.fb = $('#fb').value.trim();
+      c.stayingAt = $('#stay').value.trim(); c.email = $('#email').value.trim(); S.agree = $('#agree').checked; saveState();
+    }
+    $$('input', app).forEach(function (el) { el.addEventListener('change', read); });
+    $('#stayQuick').onclick = function (e) { var b = e.target.closest('button'); if (b) { $('#stay').value = b.textContent; read(); } };
+    $('#riders').onclick = function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      c.riders = +b.dataset.r; saveState(); $$('#riders button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      if (c.riders > 1 && !S.addons.helmet) UI.toast('Tip: add an extra helmet for your passenger');
+    };
+    wireUpload('#lic', '#licBox', 'license', 'Tap to take or upload a photo of your license');
+    wireBar(function () {
+      read();
+      var err = !c.name || c.name.length < 2 ? 'Please enter your full name.'
+        : !/^(\+?63|0)9\d{9}$/.test(c.mobile.replace(/[\s-]/g, '')) && !/^\+\d{8,15}$/.test(c.mobile.replace(/[\s-]/g, '')) ? 'Please enter a valid mobile number (e.g. 0917 123 4567).'
+        : c.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.email) ? 'Please check your email address.'
+        : !files.license ? 'Please add a photo of your driver\'s license.'
+        : !S.agree ? 'Please agree to the rental terms.' : null;
+      if (err) { $('#detMsg').innerHTML = '<div class="err-box">' + esc(err) + '</div>'; $('#detMsg').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+      go(4);
+    });
+  }
+  function uploadInner(dataUrl, text) {
+    return dataUrl ? '<img src="' + dataUrl + '" alt="Preview"><span class="small">✅ Photo added · tap to change</span>'
+      : '<div class="big-ico">📷</div><div><b>' + esc(text) + '</b></div>';
+  }
+  function wireUpload(inputSel, boxSel, key, text) {
+    $(inputSel).addEventListener('change', function (e) {
+      var f = e.target.files[0]; if (!f) return;
+      var box = $(boxSel), input = $(inputSel);
+      var label = box.querySelector('b, span.small'); if (label) label.textContent = 'Compressing photo…';
+      UI.compressImage(f, 1400, 0.72).then(function (d) {
+        files[key] = d;
+        box.innerHTML = ''; box.appendChild(input); box.insertAdjacentHTML('beforeend', uploadInner(d, text));
+      }, function (err) { UI.toast(err.message); });
+    });
+  }
+
+  // Step 5 — payment + submit
+  function stepPayment() {
+    var s = CFG.settings, q = currentQuote();
+    var gc = S.payMethod === 'gcash';
+    app.innerHTML = '<div class="wrap">' + stepHeader() + '<h2>Payment</h2>' +
+      '<div class="seg" id="pay"><button data-m="cash" class="' + (!gc ? 'on' : '') + '">💵 Pay at pickup (cash)</button><button data-m="gcash" class="' + (gc ? 'on' : '') + '">📱 Pay via GCash</button></div>' +
+      (gc ? '<div class="gcash" style="margin-top:12px"><div class="small">Send <b>' + peso(q.total) + '</b> to:</div>' +
+        '<div class="num">' + esc(s.gcashNumber) + '</div><div class="small">' + esc(s.gcashName) + '</div>' +
+        '<button class="btn sm alt" id="copyNum" style="margin-top:8px">Copy number</button>' +
+        (s.gcashQr ? '<img src="' + UI.mediaUrl(s.gcashQr) + '" alt="GCash QR code">' : '') +
+        '<label class="f" for="gref">GCash reference number</label><input id="gref" inputmode="numeric" value="' + esc(S.gcashRef) + '" placeholder="e.g. 1009 123 456789">' +
+        '<label class="f">Payment screenshot</label><label class="upload" id="proofBox"><input type="file" accept="image/*" id="proof">' + uploadInner(files.proof, 'Upload GCash screenshot') + '</label>' +
+        '</div>' : '<p class="small muted" style="margin-top:10px">Pay the rental and deposit in cash when you pick up your scooter.</p>') +
+      '<h3 style="margin-top:18px">Summary</h3><div class="card sand">' +
+        '<p><b>' + BAY.fmtLocal(pickup()) + '</b> → <b>' + BAY.fmtLocal(ret()) + '</b></p>' + breakdownHTML(q) + '</div>' +
+      '<div id="payMsg"></div></div>' + bar('Confirm booking');
+    $('#pay').onclick = function (e) { var b = e.target.closest('button'); if (b) { S.payMethod = b.dataset.m; saveState(); stepPayment(); } };
+    if (gc) {
+      $('#copyNum').onclick = function () { UI.copy(s.gcashNumber.replace(/\s/g, '')); };
+      $('#gref').addEventListener('input', function () { S.gcashRef = this.value; saveState(); });
+      wireUpload('#proof', '#proofBox', 'proof', 'Upload GCash screenshot');
+    }
+    wireBar(submit);
+  }
+
+  function submit() {
+    var btn = $('[data-next]');
+    var msgBox = $('#payMsg');
+    if (S.payMethod === 'gcash') {
+      if ((S.gcashRef || '').replace(/\D/g, '').length < 6) { msgBox.innerHTML = '<div class="err-box">Please enter your GCash reference number.</div>'; return; }
+      if (!files.proof) { msgBox.innerHTML = '<div class="err-box">Please upload your GCash payment screenshot.</div>'; return; }
+    }
+    if (!files.license) { UI.toast('Please add your license photo again'); return go(3); }
+    btn.disabled = true; btn.textContent = 'Sending…';
+    var c = S.customer;
+    UI.api('POST', '/api/bookings', {
+      pickup: pickup(), return: ret(), model: S.model, addons: S.addons,
+      customer: { name: c.name, mobile: c.mobile.replace(/[\s-]/g, ''), email: c.email, fb: c.fb, stayingAt: c.stayingAt, riders: c.riders },
+      license: files.license, agreeTerms: S.agree,
+      payment: { method: S.payMethod, gcashRef: S.gcashRef, proof: S.payMethod === 'gcash' ? files.proof : null }
+    }).then(function (r) {
+      try { localStorage.setItem('bay_last', JSON.stringify(r.booking)); } catch (e) {}
+      var keep = S.customer;
+      S = blankState(); S.customer = keep; files = { license: null, proof: null }; models = null; saveState();
+      location.hash = '#/done';
+    }).catch(function (e) {
+      btn.disabled = false; btn.textContent = 'Confirm booking';
+      msgBox.innerHTML = '<div class="err-box">' + esc(e.message) + '</div>';
+      if (e.status === 409) { models = null; setTimeout(function () { go(1); }, 1800); }
+    });
+  }
+
+  function wireBar(next) {
+    var n = $('[data-next]'), b = $('[data-back]');
+    if (n) n.onclick = next;
+    if (b) b.onclick = function () { go(Math.max(0, S.step - 1)); };
+  }
+
+  // ---------- confirmation ----------
+  function bookingSummary(b) {
+    var q = b.quote;
+    return '<div class="card sand" style="text-align:left"><p><b>' + esc(b.model) + '</b></p>' +
+      '<p>🛵 ' + BAY.fmtLocal(b.pickup) + '<br>🏁 ' + BAY.fmtLocal(b.return) + '</p>' +
+      '<table class="breakdown"><tr><td>' + esc(q.rentalLabel) + '</td><td>' + peso(q.rental) + '</td></tr>' +
+      q.addons.map(function (a) { return '<tr><td>' + esc(a.name) + (a.qty > 1 ? ' × ' + a.qty : '') + '</td><td>' + peso(a.amount) + '</td></tr>'; }).join('') +
+      '<tr class="total"><td>Rental total</td><td>' + peso(q.total) + '</td></tr>' +
+      '<tr class="dep"><td>Refundable deposit (at pickup)</td><td>' + peso(q.deposit) + '</td></tr></table>' +
+      '<p class="small muted" style="margin-top:8px">Payment: ' + (b.payment.method === 'gcash' ? 'GCash (we\'ll verify your reference)' : 'Cash at pickup') +
+      ' · Status: <b>' + esc(BAY.STATUS_LABELS[b.status]) + '</b></p></div>';
+  }
+  function messengerLink(b) {
+    var url = CFG.settings.messengerUrl || '';
+    var text = 'Hi! I just booked ' + b.ref + ' (' + b.model + ', ' + BAY.fmtLocal(b.pickup) + ').';
+    return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'text=' + encodeURIComponent(text);
+  }
+  function renderDone() {
+    var b; try { b = JSON.parse(localStorage.getItem('bay_last')); } catch (e) {}
+    if (!b) { location.hash = '#/'; return; }
+    var s = CFG.settings;
+    app.innerHTML = '<div class="wrap center"><div class="done-ico">✓</div><h2>Salamat, ' + esc((b.customer.name || '').split(' ')[0]) + '!</h2>' +
+      '<p>Your booking request is in. Your reference code:</p><div class="ref">' + esc(b.ref) + '</div>' +
+      '<p class="small muted">We\'ll confirm on Messenger or SMS shortly. Screenshot this page for easy reference.</p>' +
+      bookingSummary(b) +
+      '<a class="btn messenger big" target="_blank" rel="noopener" href="' + esc(messengerLink(b)) + '">💬 Message us on Messenger</a>' +
+      '<div class="spacer"></div><div class="card" style="text-align:left"><b>📍 Pickup point</b><p class="small">' + esc(s.address) + '<br>' + esc(s.landmark) + '</p>' +
+      '<a class="btn alt" target="_blank" rel="noopener" href="' + esc(s.mapsUrl) + '">🗺️ Get directions</a></div>' +
+      '<p class="small">Don\'t forget your original driver\'s license and ' + peso(b.quote.deposit) + ' cash deposit. Ingat sa biyahe! 🌴</p>' +
+      '<a class="btn ghost" href="#/">Back to home</a></div>' + footer();
+  }
+
+  // ---------- lookup ----------
+  function renderLookup() {
+    app.innerHTML = '<div class="wrap"><section><h2>Find my booking</h2>' +
+      '<label class="f" for="lref">Booking reference</label><input id="lref" placeholder="BAY-0001" autocapitalize="characters">' +
+      '<label class="f" for="lmob">Mobile number used</label><input id="lmob" type="tel" inputmode="tel" value="' + esc(S.customer.mobile) + '">' +
+      '<div class="spacer"></div><button class="btn" id="lgo">Find booking</button><div id="lres" style="margin-top:14px"></div></section></div>' + footer();
+    $('#lgo').onclick = function () {
+      UI.api('GET', '/api/bookings/lookup?ref=' + encodeURIComponent($('#lref').value) + '&mobile=' + encodeURIComponent($('#lmob').value))
+        .then(function (r) {
+          $('#lres').innerHTML = '<div class="center"><div class="ref">' + esc(r.booking.ref) + '</div></div>' + bookingSummary(r.booking) +
+            '<a class="btn messenger" target="_blank" rel="noopener" href="' + esc(messengerLink(r.booking)) + '">💬 Message us</a>';
+        }, function (e) { $('#lres').innerHTML = '<div class="err-box">' + esc(e.message) + '</div>'; });
+    };
+  }
+})();
+
+}
+function RUN_ADMIN() {
+/* Admin dashboard (password protected via HttpOnly session cookie). */
+(function () {
+  'use strict';
+  var $ = UI.$, $$ = UI.$$, esc = UI.esc, peso = BAY.peso;
+  var app = $('#app');
+  var D = null;                       // { settings, units, bookings, summary }
+  var filter = 'pending', query = '';
+  var calStart = null;
+  var lastSeen = +(localStorage.getItem('bay_admin_seen') || 0);
+  var FILTERS = [['pending', 'Pending'], ['confirmed', 'Confirmed'], ['picked_up', 'Picked Up'], ['returned', 'Returned'], ['cancelled', 'Cancelled'], ['all', 'All']];
+
+  // ---------- auth ----------
+  function boot() {
+    UI.api('GET', '/api/admin/me').then(load, showLogin);
+  }
+  function showLogin() {
+    $('#tabs').classList.add('hidden'); $('#logout').classList.add('hidden');
+    app.innerHTML = '<div class="wrap"><section><h2>Admin login</h2><form id="lf">' +
+      '<label class="f" for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" autofocus>' +
+      '<div id="lmsg"></div><div class="spacer"></div><button class="btn">Log in</button></form></section></div>';
+    $('#lf').onsubmit = function (e) {
+      e.preventDefault();
+      UI.api('POST', '/api/admin/login', { password: $('#pw').value }).then(load, function (err) {
+        $('#lmsg').innerHTML = '<div class="err-box">' + esc(err.message) + '</div>';
+      });
+    };
+  }
+  $('#logout').onclick = function () { UI.api('POST', '/api/admin/logout').then(showLogin); };
+  $('#refresh').onclick = function () { load().then(function () { UI.toast('Updated'); }); };
+
+  function load() {
+    return UI.api('GET', '/api/admin/data').then(function (d) {
+      var prevPending = D ? D.summary.pending : null;
+      D = d;
+      $('#tabs').classList.remove('hidden'); $('#logout').classList.remove('hidden');
+      var pc = $('#pendingCount');
+      pc.textContent = d.summary.pending; pc.classList.toggle('hidden', !d.summary.pending);
+      document.title = (d.summary.pending ? '(' + d.summary.pending + ') ' : '') + 'Admin · ' + d.settings.shopName;
+      if (prevPending !== null && d.summary.pending > prevPending) UI.toast('🛵 New booking received!');
+      route();
+    }, function (e) { if (e.status === 401) showLogin(); else UI.toast(e.message); });
+  }
+  setInterval(function () { if (D && !$('.modal') && document.visibilityState === 'visible') load(); }, 60000);
+
+  function route() {
+    $$('.modal').forEach(function (m) { m.remove(); });
+    var tab = (location.hash || '#bookings').slice(1);
+    $$('#tabs a').forEach(function (a) { a.classList.toggle('on', a.dataset.tab === tab); });
+    ({ bookings: renderBookings, calendar: renderCalendar, summary: renderSummary, fleet: renderFleet, settings: renderSettings }[tab] || renderBookings)();
+  }
+  window.addEventListener('hashchange', function () { if (D) { route(); window.scrollTo(0, 0); } });
+
+  function unitOf(b) { return D.units.filter(function (u) { return u.id === b.scooterId; })[0]; }
+  function statusPill(s) { return '<span class="st ' + s + '">' + BAY.STATUS_LABELS[s] + '</span>'; }
+
+  // ---------- bookings ----------
+  function sorted(list) {
+    var active = list.filter(function (b) { return BAY.ACTIVE_STATUSES.indexOf(b.status) >= 0; }).sort(function (a, b) { return a.pickup.localeCompare(b.pickup); });
+    var done = list.filter(function (b) { return BAY.ACTIVE_STATUSES.indexOf(b.status) < 0; }).sort(function (a, b) { return b.pickup.localeCompare(a.pickup); });
+    return active.concat(done);
+  }
+  function renderBookings() {
+    var counts = {};
+    D.bookings.forEach(function (b) { counts[b.status] = (counts[b.status] || 0) + 1; });
+    counts.all = D.bookings.length;
+    var q = query.toLowerCase();
+    var list = sorted(D.bookings.filter(function (b) {
+      if (filter !== 'all' && b.status !== filter) return false;
+      if (!q) return true;
+      return [b.ref, b.customer.name, b.customer.mobile, b.customer.fb, b.model].join(' ').toLowerCase().indexOf(q) >= 0;
+    }));
+    app.innerHTML = '<div class="wrap wide"><input class="search" id="q" type="search" placeholder="Search name, mobile, ref…" value="' + esc(query) + '">' +
+      '<div class="filters">' + FILTERS.map(function (f) {
+        return '<button data-f="' + f[0] + '" class="' + (filter === f[0] ? 'on' : '') + '">' + f[1] + '<small>' + (counts[f[0]] || 0) + '</small></button>';
+      }).join('') + '</div>' +
+      (list.length ? '<div class="bklist">' + list.map(bookingCard).join('') + '</div>' : '<p class="muted center" style="padding:30px 0">No bookings here.</p>') + '</div>';
+    $$('.filters button').forEach(function (b) { b.onclick = function () { filter = b.dataset.f; renderBookings(); }; });
+    $('#q').addEventListener('input', function () { query = this.value; var pos = this.selectionStart; renderBookings(); var el = $('#q'); el.focus(); el.setSelectionRange(pos, pos); });
+    $$('.bk').forEach(function (el) { el.onclick = function () { openBooking(el.dataset.id); }; });
+    var newest = D.bookings.reduce(function (m, b) { return Math.max(m, Date.parse(b.createdAt)); }, 0);
+    setTimeout(function () { lastSeen = newest; localStorage.setItem('bay_admin_seen', newest); }, 3000);
+  }
+  function bookingCard(b) {
+    var u = unitOf(b);
+    var isNew = Date.parse(b.createdAt) > lastSeen && b.status === 'pending';
+    return '<button class="bk" data-id="' + b.id + '"><div class="top"><span><span class="ref">' + esc(b.ref) + '</span>' + (isNew ? '<span class="new">NEW</span>' : '') +
+      '</span>' + statusPill(b.status) + '</div>' +
+      '<div><b>' + esc(b.customer.name) + '</b> · ' + esc(b.model) + (u ? ' <span class="muted small">' + esc(u.plate) + '</span>' : '') + '</div>' +
+      '<div class="small muted">' + BAY.fmtLocal(b.pickup) + ' → ' + BAY.fmtLocal(b.return) + '</div>' +
+      '<div class="small">' + peso(b.quote.total) + ' · ' + (b.payment.method === 'gcash' ? 'GCash' : 'Cash') + (b.payment.status === 'paid' ? ' ✅' : '') +
+      ' · Deposit: ' + b.deposit + '</div></button>';
+  }
+
+  function patch(b, body) {
+    return UI.api('PATCH', '/api/admin/bookings/' + b.id, body).then(function (r) {
+      var i = D.bookings.indexOf(b); D.bookings[i] = r.booking;
+      return load().then(function () { return r.booking; });
+    }, function (e) { UI.toast(e.message); throw e; });
+  }
+
+  function openBooking(id) {
+    var b = D.bookings.filter(function (x) { return x.id === id; })[0];
+    if (!b) return;
+    var u = unitOf(b), c = b.customer, q = b.quote;
+    var phone = c.mobile.replace(/^0/, '+63');
+    var unitOpts = D.units.map(function (x) {
+      return '<option value="' + x.id + '"' + (x.id === b.scooterId ? ' selected' : '') + '>' + esc(x.name + ' · ' + x.plate) + (x.status === 'maintenance' ? ' (maintenance)' : '') + '</option>';
+    }).join('');
+    var statusBtns = [['confirmed', '✅ Confirm'], ['picked_up', '🛵 Picked up'], ['returned', '🏁 Returned'], ['cancelled', '✕ Cancel'], ['pending', '⏳ Pending']]
+      .map(function (s) { return '<button class="btn alt' + (b.status === s[0] ? ' on' : '') + '" data-status="' + s[0] + '">' + s[1] + '</button>'; }).join('');
+    var html =
+      '<p>' + statusPill(b.status) + ' <span class="small muted">booked ' + new Date(b.createdAt).toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' }) + '</span></p>' +
+      '<div class="actions">' + statusBtns + '</div>' +
+      '<h3 style="margin-top:16px">Rental</h3><dl class="kv">' +
+        '<dt>Pickup</dt><dd>' + BAY.fmtLocal(b.pickup) + '</dd><dt>Return</dt><dd>' + BAY.fmtLocal(b.return) + '</dd>' +
+        '<dt>Scooter</dt><dd><select id="unitSel">' + unitOpts + '</select></dd>' +
+        '<dt>Add-ons</dt><dd>' + (q.addons.length ? q.addons.map(function (a) { return esc(a.name) + (a.qty > 1 ? ' ×' + a.qty : ''); }).join(', ') : '—') + '</dd>' +
+        '<dt>Rental</dt><dd>' + esc(q.rentalLabel) + ' = ' + peso(q.rental) + '</dd>' +
+        '<dt>Total</dt><dd><b>' + peso(q.total) + '</b> + ' + peso(q.deposit) + ' deposit</dd></dl>' +
+      '<h3 style="margin-top:16px">Customer</h3><dl class="kv">' +
+        '<dt>Name</dt><dd>' + esc(c.name) + '</dd><dt>Mobile</dt><dd><a href="tel:' + esc(phone) + '">' + esc(c.mobile) + '</a></dd>' +
+        (c.email ? '<dt>Email</dt><dd><a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></dd>' : '') +
+        '<dt>Facebook</dt><dd>' + esc(c.fb || '—') + '</dd><dt>Staying at</dt><dd>' + esc(c.stayingAt || '—') + '</dd>' +
+        '<dt>Riders</dt><dd>' + c.riders + '</dd></dl>' +
+      '<div class="row" style="margin-top:10px"><a class="btn sm alt" href="tel:' + esc(phone) + '">📞 Call</a><a class="btn sm alt" href="sms:' + esc(phone) + '">💬 SMS</a></div>' +
+      '<h3 style="margin-top:16px">Payment &amp; deposit</h3><dl class="kv">' +
+        '<dt>Method</dt><dd>' + (b.payment.method === 'gcash' ? 'GCash · ref <b>' + esc(b.payment.gcashRef) + '</b>' : 'Cash at pickup') + '</dd></dl>' +
+      '<div class="seg" style="margin-top:8px" id="paySeg"><button data-pay="unpaid" class="' + (b.payment.status !== 'paid' ? 'on' : '') + '">Unpaid</button><button data-pay="paid" class="' + (b.payment.status === 'paid' ? 'on' : '') + '">Paid ✅</button></div>' +
+      '<div class="seg" style="margin-top:8px" id="depSeg">' + [['pending', 'Deposit pending'], ['collected', 'Collected'], ['refunded', 'Refunded']].map(function (d) {
+        return '<button data-dep="' + d[0] + '" class="' + (b.deposit === d[0] ? 'on' : '') + '">' + d[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="proof">' +
+        (b.licensePhoto ? '<h3 style="margin-top:16px">Driver\'s license</h3><a href="' + UI.fileUrl(b.licensePhoto) + '" target="_blank"><img loading="lazy" src="' + UI.fileUrl(b.licensePhoto) + '" alt="License"></a>' : '<p class="small muted" style="margin-top:12px">No license photo (sample booking).</p>') +
+        (b.payment.proof ? '<h3>GCash proof</h3><a href="' + UI.fileUrl(b.payment.proof) + '" target="_blank"><img loading="lazy" src="' + UI.fileUrl(b.payment.proof) + '" alt="GCash proof"></a>' : '') +
+      '</div>' +
+      '<h3 style="margin-top:16px">Messages</h3><div id="msgs"><div class="spinner"></div></div>' +
+      '<label class="f" for="notes">Internal notes</label><textarea id="notes" placeholder="e.g. fuel level, damage, helmet no.">' + esc(b.notes || '') + '</textarea>' +
+      '<button class="btn sand" id="saveNotes" style="margin-top:8px">Save notes</button>';
+    UI.modal(b.ref + ' · ' + c.name, html, function (body, close) {
+      var reopen = function (nb) { close(); openBooking(nb.id); };
+      $$('[data-status]', body).forEach(function (btn) {
+        btn.onclick = function () {
+          if (btn.dataset.status === 'cancelled' && !confirm('Cancel booking ' + b.ref + '?')) return;
+          patch(b, { status: btn.dataset.status }).then(function (nb) { UI.toast(BAY.STATUS_LABELS[nb.status]); reopen(nb); });
+        };
+      });
+      $$('[data-pay]', body).forEach(function (btn) { btn.onclick = function () { patch(b, { paymentStatus: btn.dataset.pay }).then(reopen); }; });
+      $$('[data-dep]', body).forEach(function (btn) { btn.onclick = function () { patch(b, { deposit: btn.dataset.dep }).then(reopen); }; });
+      $('#unitSel', body).onchange = function () {
+        var sel = this;
+        patch(b, { scooterId: sel.value }).then(function (nb) { UI.toast('Scooter reassigned'); reopen(nb); }, function () { sel.value = b.scooterId; });
+      };
+      $('#saveNotes', body).onclick = function () { patch(b, { notes: $('#notes', body).value }).then(function () { UI.toast('Notes saved'); }); };
+      UI.api('GET', '/api/admin/bookings/' + b.id + '/messages').then(function (m) {
+        var smsHref = 'sms:' + phone + (/iPhone|iPad/.test(navigator.userAgent) ? '&' : '?') + 'body=' + encodeURIComponent(m.customer);
+        $('#msgs', body).innerHTML =
+          '<p class="small"><b>Confirmation for customer</b> (Messenger / SMS)</p><pre class="msg">' + esc(m.customer) + '</pre>' +
+          '<div class="row"><button class="btn sm" id="cpC">📋 Copy message</button><a class="btn sm alt" href="' + esc(smsHref) + '">Open SMS</a></div>' +
+          '<p class="small" style="margin-top:12px"><b>New-booking alert</b> (SMS-ready)</p><pre class="msg">' + esc(m.admin) + '</pre>' +
+          '<button class="btn sm alt" id="cpA">📋 Copy alert</button>';
+        $('#cpC', body).onclick = function () { UI.copy(m.customer); };
+        $('#cpA', body).onclick = function () { UI.copy(m.admin); };
+      });
+    });
+  }
+
+  // ---------- calendar / timeline ----------
+  function renderCalendar() {
+    var DAYS = 14, PX = window.innerWidth < 600 ? 72 : 96;
+    if (!calStart) calStart = BAY.addDays(BAY.today(), -1);
+    var t0 = BAY.toEpoch(calStart + 'T00:00'), t1 = t0 + DAYS * 864e5;
+    var x = function (local) { return Math.max(0, Math.min(DAYS * PX, (BAY.toEpoch(local) - t0) / 864e5 * PX)); };
+    var days = []; for (var i = 0; i < DAYS; i++) days.push(BAY.addDays(calStart, i));
+    var today = BAY.today();
+    var grid = days.map(function (d, i) { return '<div class="tl-day' + (d === today ? ' today' : '') + '" style="left:' + i * PX + 'px;width:' + PX + 'px"></div>'; }).join('');
+    var head = '<div class="tl-row tl-head"><div class="tl-label"><b>Scooter</b></div><div class="tl-track" style="width:' + DAYS * PX + 'px">' +
+      days.map(function (d, i) { return '<div class="tl-day' + (d === today ? ' today' : '') + '" style="left:' + i * PX + 'px;width:' + PX + 'px">' + BAY.fmtDate(d).replace(', ', '<br>') + '</div>'; }).join('') + '</div></div>';
+    var rows = D.units.map(function (u) {
+      var bars = D.bookings.filter(function (b) {
+        return b.scooterId === u.id && b.status !== 'cancelled' && BAY.toEpoch(b.return) > t0 && BAY.toEpoch(b.pickup) < t1;
+      }).map(function (b) {
+        var l = x(b.pickup), w = Math.max(18, x(b.return) - l);
+        return '<button class="tl-bar ' + b.status + '" data-id="' + b.id + '" style="left:' + l + 'px;width:' + w + 'px" title="' + esc(b.ref + ' ' + b.customer.name) + '">' +
+          esc(b.customer.name.split(' ')[0]) + '<br>' + esc(b.ref) + '</button>';
+      }).join('');
+      return '<div class="tl-row"><div class="tl-label"><b>' + esc(u.name) + '</b>' + esc(u.plate) + '</div><div class="tl-track" style="width:' + DAYS * PX + 'px">' +
+        (u.status === 'maintenance' ? '<div class="tl-maint" title="Under maintenance"></div>' : '') + grid + bars + '</div></div>';
+    }).join('');
+    app.innerHTML = '<div class="wrap wide"><section><div class="row" style="margin-bottom:10px">' +
+      '<button class="btn sm alt" id="prev">← Week</button><button class="btn sm alt" id="tod">Today</button><button class="btn sm alt" id="next">Week →</button></div>' +
+      '<div class="tl-wrap"><div class="tl">' + head + rows + '</div></div>' +
+      '<div class="legend"><span><i style="background:#e0a326"></i>Pending</span><span><i style="background:#2a78c2"></i>Confirmed</span><span><i style="background:#1e9e63"></i>Picked up</span><span><i style="background:#9aa9b1"></i>Returned</span><span><i style="background:#ddd"></i>Maintenance</span></div>' +
+      '<p class="small muted">Tap a booking to open it. Swipe sideways to see more days.</p></section></div>';
+    $('#prev').onclick = function () { calStart = BAY.addDays(calStart, -7); renderCalendar(); };
+    $('#next').onclick = function () { calStart = BAY.addDays(calStart, 7); renderCalendar(); };
+    $('#tod').onclick = function () { calStart = null; renderCalendar(); };
+    $$('.tl-bar').forEach(function (el) { el.onclick = function () { openBooking(el.dataset.id); }; });
+  }
+
+  // ---------- summary ----------
+  function renderSummary() {
+    var s = D.summary, t = BAY.today();
+    var stat = function (v, l) { return '<div class="stat"><div class="v">' + v + '</div><div class="l">' + l + '</div></div>'; };
+    var mini = function (list, field) {
+      return list.length ? list.map(function (b) {
+        return '<button class="bk" data-id="' + b.id + '"><b>' + BAY.fmtTime(b[field].slice(11)) + '</b> · ' + esc(b.customer.name) + ' · ' + esc(b.model) + ' ' + statusPill(b.status) + '</button>';
+      }).join('') : '<p class="small muted">None</p>';
+    };
+    var pick = D.bookings.filter(function (b) { return ['pending', 'confirmed'].indexOf(b.status) >= 0 && b.pickup.indexOf(t) === 0; }).sort(function (a, b) { return a.pickup.localeCompare(b.pickup); });
+    var rets = D.bookings.filter(function (b) { return b.status === 'picked_up' && b.return.indexOf(t) === 0; }).sort(function (a, b) { return a.return.localeCompare(b.return); });
+    var late = D.bookings.filter(function (b) { return b.status === 'picked_up' && BAY.toEpoch(b.return) < Date.now(); });
+    app.innerHTML = '<div class="wrap wide"><section>' +
+      '<h2>This week <span class="small muted">(from ' + BAY.fmtDate(s.weekStart) + ')</span></h2><div class="stats">' +
+        stat(s.week.bookings, 'Bookings') + stat(peso(s.week.revenue), 'Revenue') + stat(s.pending, 'Awaiting confirmation') + stat(s.outNow, 'Scooters out now') + '</div>' +
+      '<h2 style="margin-top:18px">This month</h2><div class="stats">' +
+        stat(s.month.bookings, 'Bookings') + stat(peso(s.month.revenue), 'Revenue') +
+        stat(s.topModel ? esc(s.topModel.model) : '—', 'Most rented' + (s.topModel ? ' (' + s.topModel.count + ')' : '')) + stat(peso(s.depositsHeld), 'Deposits held') + '</div>' +
+      '<p class="small muted">Revenue counts confirmed, picked-up and returned bookings by pickup date (deposits excluded).</p>' +
+      (late.length ? '<h3 style="color:var(--err)">⚠️ Overdue returns</h3>' + mini(late, 'return') : '') +
+      '<h3 style="margin-top:14px">Pickups today</h3>' + mini(pick, 'pickup') +
+      '<h3 style="margin-top:14px">Returns today</h3>' + mini(rets, 'return') +
+      '<div class="spacer"></div><a class="btn alt" id="exportCsv" href="/api/admin/export.csv">⬇️ Export all bookings (CSV)</a></section></div>';
+    if (UI.exportCsv) $('#exportCsv').onclick = function (e) { e.preventDefault(); UI.exportCsv(); };
+    $$('.bk').forEach(function (el) { el.onclick = function () { openBooking(el.dataset.id); }; });
+  }
+
+  // ---------- fleet ----------
+  function renderFleet() {
+    app.innerHTML = '<div class="wrap wide"><section><button class="btn" id="addUnit">＋ Add scooter</button><div class="spacer"></div>' +
+      D.units.map(function (u) {
+        var badge = u.status === 'available' ? 'ok' : u.status === 'maintenance' ? 'no' : 'warn';
+        return '<button class="bk" data-id="' + u.id + '"><div class="unit-row"><img alt="" src="' + UI.unitPhoto(u) + '"><div style="flex:1">' +
+          '<b>' + esc(u.name) + '</b> <span class="small muted">' + esc(u.plate) + '</span><br><span class="badge ' + badge + '">' + esc(u.status.replace('maintenance', 'under maintenance')) + '</span>' +
+          '<div class="small">' + peso(u.dailyRate) + '/day' + (u.halfDayRate ? ' · ' + peso(u.halfDayRate) + ' half-day' : '') + (u.multiDayRate ? ' · ' + peso(u.multiDayRate) + '/day ' + D.settings.multiDayMinDays + '+ days' : '') + '</div></div></div></button>';
+      }).join('') + '</section></div>';
+    $('#addUnit').onclick = function () { editUnit(null); };
+    $$('.bk').forEach(function (el) { el.onclick = function () { editUnit(el.dataset.id); }; });
+  }
+  function photoPicker(id, current, label) {
+    return '<label class="upload" id="' + id + 'Box"><input type="file" accept="image/*" id="' + id + '">' +
+      (current ? '<img src="' + current + '" alt="">' : '') + '<div><b>' + esc(label) + '</b></div></label>';
+  }
+  function uploadPublic(file, maxSide) {
+    return UI.compressImage(file, maxSide || 900, 0.72).then(function (d) { return UI.api('POST', '/api/admin/upload', { dataUrl: d }); }).then(function (r) { return r.file; });
+  }
+  function editUnit(id) {
+    var u = id ? D.units.filter(function (x) { return x.id === id; })[0] : { name: '', plate: '', color: '#1f6fb2', dailyRate: 500, halfDayRate: 0, multiDayRate: 0, description: '', status: 'available', photo: null };
+    var photo = u.photo;
+    var f = function (k, label, type, extra) { return '<label class="f" for="u_' + k + '">' + label + '</label><input id="u_' + k + '" type="' + (type || 'text') + '" value="' + esc(u[k]) + '"' + (extra || '') + '>'; };
+    UI.modal(id ? 'Edit scooter' : 'Add scooter',
+      photoPicker('uPhoto', u.photo ? UI.mediaUrl(u.photo) : '', u.photo ? 'Tap to change photo' : 'Tap to add a photo') +
+      f('name', 'Model name', 'text', ' placeholder="Honda Click 125"') + f('plate', 'Plate number (admin only)') +
+      f('description', 'Short description') +
+      '<div class="grid2">' + f('dailyRate', 'Daily rate ₱', 'number', ' inputmode="numeric"') + f('halfDayRate', 'Half-day ₱ (0 = off)', 'number', ' inputmode="numeric"') +
+      f('multiDayRate', 'Multi-day ₱/day (0 = off)', 'number', ' inputmode="numeric"') + f('color', 'Colour', 'color') + '</div>' +
+      '<label class="f">Status</label><div class="seg" id="uStatus">' + [['available', 'Available'], ['rented', 'Rented'], ['maintenance', 'Maintenance']].map(function (s) {
+        return '<button data-s="' + s[0] + '" class="' + (u.status === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="spacer"></div><button class="btn" id="uSave">Save</button>' + (id ? '<button class="btn ghost" id="uDel" style="color:var(--err)">Delete scooter</button>' : ''),
+      function (body, close) {
+        var status = u.status;
+        $('#uStatus', body).onclick = function (e) { var b = e.target.closest('button'); if (!b) return; status = b.dataset.s; $$('#uStatus button', body).forEach(function (x) { x.classList.toggle('on', x === b); }); };
+        $('#uPhoto', body).onchange = function (e) {
+          var box = $('#uPhotoBox', body); box.querySelector('b').textContent = 'Uploading…';
+          uploadPublic(e.target.files[0]).then(function (file) {
+            photo = file; var img = box.querySelector('img') || box.insertBefore(document.createElement('img'), box.querySelector('div'));
+            img.src = UI.mediaUrl(file); box.querySelector('b').textContent = 'Tap to change photo';
+          }, function (err) { UI.toast(err.message); box.querySelector('b').textContent = 'Tap to add a photo'; });
+        };
+        $('#uSave', body).onclick = function () {
+          var data = { photo: photo, status: status };
+          ['name', 'plate', 'description', 'dailyRate', 'halfDayRate', 'multiDayRate', 'color'].forEach(function (k) { data[k] = $('#u_' + k, body).value; });
+          UI.api(id ? 'PUT' : 'POST', '/api/admin/units' + (id ? '/' + id : ''), data).then(function () { close(); UI.toast('Saved'); load(); }, function (e) { UI.toast(e.message); });
+        };
+        if (id) $('#uDel', body).onclick = function () {
+          if (!confirm('Delete ' + u.name + ' (' + u.plate + ')?')) return;
+          UI.api('DELETE', '/api/admin/units/' + id).then(function () { close(); UI.toast('Deleted'); load(); }, function (e) { UI.toast(e.message); });
+        };
+      });
+  }
+
+  // ---------- settings ----------
+  function renderSettings() {
+    var s = D.settings;
+    var inp = function (k, label, type, extra) { return '<label class="f" for="s_' + k + '">' + label + '</label><input id="s_' + k + '" data-k="' + k + '" type="' + (type || 'text') + '" value="' + esc(s[k]) + '"' + (extra || '') + '>'; };
+    var numIn = function (k, label) { return inp(k, label, 'number', ' inputmode="numeric" data-num'); };
+    app.innerHTML = '<div class="wrap wide"><section>' +
+      '<div class="card"><h3>💰 Pricing &amp; rules</h3><div class="grid2">' +
+        numIn('deposit', 'Security deposit ₱') + numIn('lateFeePerHour', 'Late fee ₱ / hour') +
+        numIn('multiDayMinDays', 'Multi-day rate from (days)') + numIn('halfDayHours', 'Half-day = up to (hrs)') +
+        numIn('freeCancelHours', 'Free cancel up to (hrs before)') + numIn('graceMinutes', 'Grace before extra day (min)') +
+        numIn('bufferMinutes', 'Turnaround between rentals (min)') + numIn('leadMinutes', 'Earliest pickup from now (min)') +
+        numIn('minHours', 'Minimum rental (hrs)') + numIn('maxRiders', 'Max riders') + '</div>' +
+        '<p class="small muted">Per-scooter daily / half-day / multi-day rates are set in the Fleet tab.</p></div>' +
+      '<div class="card"><h3>🕘 Pickup &amp; return hours</h3><div class="grid2">' + inp('openTime', 'Opens', 'time') + inp('closeTime', 'Closes', 'time') + '</div>' + numIn('slotMinutes', 'Time slot step (min)') + '</div>' +
+      '<div class="card"><h3>➕ Add-ons</h3><div class="edit-list" id="addons"></div><button class="btn sm alt" id="addAddon">＋ Add add-on</button>' +
+        '<p class="small muted">Price · Max qty · tick "/day" to charge per day.</p></div>' +
+      '<div class="card"><h3>📜 Rental terms</h3><p class="small muted">One rule per line. Use {deposit}, {lateFee}, {cancelHours} to insert current values.</p>' +
+        '<textarea id="terms" style="min-height:200px">' + esc(s.terms.join('\n')) + '</textarea></div>' +
+      '<div class="card"><h3>📱 GCash</h3>' + inp('gcashNumber', 'GCash number') + inp('gcashName', 'Account name') +
+        '<label class="f">GCash QR code</label>' + photoPicker('qr', s.gcashQr ? UI.mediaUrl(s.gcashQr) : '', s.gcashQr ? 'Tap to replace QR' : 'Upload QR image') +
+        (s.gcashQr ? '<button class="btn sm ghost" id="rmQr">Remove QR</button>' : '') + '</div>' +
+      '<div class="card"><h3>🏝️ Shop info</h3>' + inp('shopName', 'Shop name') + inp('tagline', 'Tagline') +
+        '<label class="f" for="s_intro">Intro</label><textarea id="s_intro" data-k="intro">' + esc(s.intro) + '</textarea>' +
+        inp('address', 'Address') + inp('landmark', 'Landmark') + inp('mapsUrl', 'Google Maps link', 'url') + inp('phone', 'Phone', 'tel') +
+        inp('messengerUrl', 'Messenger link (m.me/…)', 'url') + inp('adminEmail', 'Admin email for alerts', 'email') +
+        '<label class="f">Shop photos (landing page)</label><div class="thumbs" id="gal"></div>' +
+        '<label class="btn sm alt" style="margin-top:8px">＋ Add photo<input type="file" accept="image/*" id="galAdd" class="hidden"></label></div>' +
+      '<button class="btn big" id="saveSettings">Save settings</button>' +
+      '<div class="card" style="margin-top:18px"><h3>🔒 Change admin password</h3><input id="newPw" type="password" autocomplete="new-password" placeholder="New password (8+ characters)">' +
+        '<button class="btn sm alt" id="savePw" style="margin-top:8px">Update password</button></div>' +
+      '</section></div>';
+
+    var addons = JSON.parse(JSON.stringify(s.addons));
+    var gallery = (s.gallery || []).slice();
+    var qr = s.gcashQr;
+    function drawAddons() {
+      $('#addons').innerHTML = addons.map(function (a, i) {
+        return '<div class="item addon"><input data-i="' + i + '" data-f="name" value="' + esc(a.name) + '" aria-label="Name">' +
+          '<input data-i="' + i + '" data-f="price" type="number" inputmode="numeric" value="' + a.price + '" aria-label="Price">' +
+          '<div><input data-i="' + i + '" data-f="maxQty" type="number" inputmode="numeric" value="' + a.maxQty + '" aria-label="Max qty" style="padding:8px 4px"><label class="mini-check"><input type="checkbox" data-i="' + i + '" data-f="perDay"' + (a.perDay ? ' checked' : '') + '>/day</label></div>' +
+          '<button class="iconbtn" data-rm="' + i + '" aria-label="Remove">🗑</button></div>';
+      }).join('');
+    }
+    function drawGallery() {
+      $('#gal').innerHTML = gallery.map(function (g, i) { return '<div class="t"><img src="' + UI.mediaUrl(g) + '" alt=""><button data-g="' + i + '" aria-label="Remove">✕</button></div>'; }).join('') || '<span class="small muted">No photos yet</span>';
+    }
+    drawAddons(); drawGallery();
+    $('#addons').addEventListener('input', function (e) {
+      var el = e.target, a = addons[el.dataset.i]; if (!a) return;
+      a[el.dataset.f] = el.type === 'checkbox' ? el.checked : el.type === 'number' ? +el.value : el.value;
+    });
+    $('#addons').addEventListener('change', function (e) { var el = e.target; if (el.type === 'checkbox') addons[el.dataset.i].perDay = el.checked; });
+    $('#addons').addEventListener('click', function (e) { var b = e.target.closest('[data-rm]'); if (b) { addons.splice(+b.dataset.rm, 1); drawAddons(); } });
+    $('#addAddon').onclick = function () { addons.push({ id: 'a' + Date.now().toString(36), name: '', price: 0, perDay: false, maxQty: 1, active: true }); drawAddons(); };
+    $('#gal').addEventListener('click', function (e) { var b = e.target.closest('[data-g]'); if (b) { gallery.splice(+b.dataset.g, 1); drawGallery(); } });
+    $('#galAdd').onchange = function (e) { UI.toast('Uploading…'); uploadPublic(e.target.files[0], 1200).then(function (f) { gallery.push(f); drawGallery(); UI.toast('Added — remember to Save'); }, function (er) { UI.toast(er.message); }); };
+    $('#qr').onchange = function (e) {
+      UI.toast('Uploading…');
+      uploadPublic(e.target.files[0], 700).then(function (f) {
+        qr = f; var box = $('#qrBox'); var img = box.querySelector('img') || box.insertBefore(document.createElement('img'), box.querySelector('div'));
+        img.src = UI.mediaUrl(f); UI.toast('QR uploaded — remember to Save');
+      }, function (er) { UI.toast(er.message); });
+    };
+    if ($('#rmQr')) $('#rmQr').onclick = function () { qr = null; var img = $('#qrBox img'); if (img) img.remove(); };
+    $('#saveSettings').onclick = function () {
+      var data = { addons: addons.filter(function (a) { return a.name.trim(); }), gallery: gallery, gcashQr: qr,
+        terms: $('#terms').value.split('\n').map(function (t) { return t.trim(); }).filter(Boolean) };
+      $$('[data-k]').forEach(function (el) { data[el.dataset.k] = el.hasAttribute('data-num') ? +el.value : el.value; });
+      UI.api('PUT', '/api/admin/settings', data).then(function () { UI.toast('Settings saved'); load(); }, function (e) { UI.toast(e.message); });
+    };
+    $('#savePw').onclick = function () {
+      UI.api('PUT', '/api/admin/password', { password: $('#newPw').value }).then(function () { $('#newPw').value = ''; UI.toast('Password updated'); }, function (e) { UI.toast(e.message); });
+    };
+  }
+
+  boot();
+})();
+
+}
+
+(function () {
+  var mode = 'customer';
+  try { mode = sessionStorage.getItem('bay_demo_mode') || 'customer'; } catch (e) {}
+  var T = {"customer":"<header class=\"topbar\">\n  <div class=\"wrap\">\n    <a class=\"brand\" href=\"#/\">\n      <svg viewBox=\"0 0 32 32\" aria-hidden=\"true\"><circle cx=\"16\" cy=\"16\" r=\"16\" fill=\"#0b6e99\"/><path d=\"M4 20q6-4 12 0t12 0v8H4z\" fill=\"#f4e7cf\"/><circle cx=\"22\" cy=\"10\" r=\"4\" fill=\"#ffd36b\"/></svg>\n      <span id=\"brandName\">Baybayin Scooter Rental</span>\n    </a>\n    <a class=\"iconbtn\" href=\"#/lookup\" aria-label=\"Find my booking\" title=\"Find my booking\" style=\"display:flex;align-items:center;justify-content:center;text-decoration:none\">🔎</a>\n  </div>\n</header>\n<main id=\"app\"><div class=\"spinner\" aria-label=\"Loading\"></div></main>\n<noscript><p class=\"wrap\">Please enable JavaScript to book, or message us on Facebook Messenger.</p></noscript>","admin":"<header class=\"topbar\">\n  <div class=\"wrap wide\">\n    <span class=\"brand\">🛵 <span>Baybayin Admin</span></span>\n    <button class=\"iconbtn\" id=\"refresh\" aria-label=\"Refresh\" title=\"Refresh\">⟳</button>\n    <button class=\"iconbtn hidden\" id=\"logout\" title=\"Log out\" style=\"font-size:.85rem;font-weight:700\">Log out</button>\n  </div>\n</header>\n<main id=\"app\"><div class=\"spinner\"></div></main>\n<nav class=\"tabs hidden\" id=\"tabs\">\n  <a href=\"#bookings\" data-tab=\"bookings\"><span>📋</span>Bookings<b class=\"count hidden\" id=\"pendingCount\"></b></a>\n  <a href=\"#calendar\" data-tab=\"calendar\"><span>📅</span>Calendar</a>\n  <a href=\"#summary\" data-tab=\"summary\"><span>📊</span>Summary</a>\n  <a href=\"#fleet\" data-tab=\"fleet\"><span>🛵</span>Fleet</a>\n  <a href=\"#settings\" data-tab=\"settings\"><span>⚙️</span>Settings</a>\n</nav>"};
+  var other = mode === 'admin' ? 'customer' : 'admin';
+  var ribbon = '<div class="demo-ribbon"><div class="wrap"><span><b>DEMO</b> · bookings are saved in this browser only' +
+    (mode === 'admin' ? ' · password <b>' + BAY_DEMO.password + '</b>' : '') + '</span>' +
+    '<button id="demoSwitch">' + (mode === 'admin' ? '← Customer view' : 'Admin view →') + '</button>' +
+    '<button class="ghost" id="demoReset">Reset demo</button></div></div>';
+  document.body.innerHTML = ribbon + T[mode];
+  if (mode === 'admin') document.body.classList.add('admin');
+  document.getElementById('demoSwitch').onclick = function () {
+    try { sessionStorage.setItem('bay_demo_mode', other); } catch (e) {}
+    location.hash = ''; location.reload();
+  };
+  document.getElementById('demoReset').onclick = function () {
+    if (!confirm('Reset all demo bookings and settings back to the sample data?')) return;
+    BAY_DEMO.reset(); location.hash = ''; location.reload();
+  };
+  (mode === 'admin' ? RUN_ADMIN : RUN_CUSTOMER)();
+})();
+</script>
+</body>
+</html>

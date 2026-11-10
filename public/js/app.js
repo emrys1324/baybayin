@@ -58,7 +58,7 @@
       return '<div class="card"><img class="scooter-img" loading="lazy" alt="' + esc(u.name) + '" src="' + UI.unitPhoto(u) + '">' +
         '<div class="name">' + esc(u.name) + '</div><div class="small muted">from <b>' + peso(u.halfDayRate || u.dailyRate) + '</b></div></div>';
     }).join('');
-    var gallery = (s.gallery || []).map(function (g) { return '<img loading="lazy" alt="Shop photo" src="/media/' + esc(g) + '">'; }).join('');
+    var gallery = (s.gallery || []).map(function (g) { return '<img loading="lazy" alt="Shop photo" src="' + UI.mediaUrl(g) + '">'; }).join('');
     app.innerHTML =
       '<div class="hero"><div class="wrap">' +
         '<h1>' + esc(s.shopName) + '</h1><p class="tag">' + esc(s.tagline) + '</p>' +
@@ -322,7 +322,7 @@
       (gc ? '<div class="gcash" style="margin-top:12px"><div class="small">Send <b>' + peso(q.total) + '</b> to:</div>' +
         '<div class="num">' + esc(s.gcashNumber) + '</div><div class="small">' + esc(s.gcashName) + '</div>' +
         '<button class="btn sm alt" id="copyNum" style="margin-top:8px">Copy number</button>' +
-        (s.gcashQr ? '<img src="/media/' + esc(s.gcashQr) + '" alt="GCash QR code">' : '') +
+        (s.gcashQr ? '<img src="' + UI.mediaUrl(s.gcashQr) + '" alt="GCash QR code">' : '') +
         '<label class="f" for="gref">GCash reference number</label><input id="gref" inputmode="numeric" value="' + esc(S.gcashRef) + '" placeholder="e.g. 1009 123 456789">' +
         '<label class="f">Payment screenshot</label><label class="upload" id="proofBox"><input type="file" accept="image/*" id="proof">' + uploadInner(files.proof, 'Upload GCash screenshot') + '</label>' +
         '</div>' : '<p class="small muted" style="margin-top:10px">Pay the rental and deposit in cash when you pick up your scooter.</p>') +

@@ -155,3 +155,12 @@ test('static files and path traversal', async () => {
   assert.strictEqual((await fetch(base + '/admin')).status, 200);
   assert.notStrictEqual((await fetch(base + '/..%2fserver.js')).status, 200);
 });
+
+test('standalone demo builds into one self-contained file', () => {
+  const { execFileSync } = require('child_process');
+  execFileSync(process.execPath, [path.join(__dirname, '..', 'scripts', 'build-demo.js')]);
+  const html = fs.readFileSync(path.join(__dirname, '..', 'dist', 'baybayin-demo.html'), 'utf8');
+  assert.match(html, /function RUN_CUSTOMER/);
+  assert.match(html, /function RUN_ADMIN/);
+  assert.doesNotMatch(html, /<script src=|<link rel="stylesheet"/, 'no external files');
+});

@@ -18,10 +18,22 @@ npm start
 - Customer site: http://localhost:3000
 - Admin: http://localhost:3000/admin (default password **`baybayin2026`**; change it in Admin → Settings)
 
-The first run creates `data/db.json` with **sample data**: 5 scooters (one is under maintenance) and 6 bookings in different statuses, dated around today.
+### Try it without a server: the one-file demo
+
+`dist/baybayin-demo.html` is the whole app (customer site **and** admin) in a single file. It needs no server or internet: open it in any phone or computer browser, or send it to someone. Use the **Admin view →** button at the top to switch views (demo password `baybayin2026`).
+
+In the demo, bookings are saved **only in that browser**, so it's for previewing and showing the owner, not for taking real bookings. After changing the code, rebuild it with:
 
 ```bash
-npm test             # API + pricing tests (8 tests)
+npm run build:demo
+```
+
+### Sample data
+
+The first server run creates `data/db.json` with **sample data**: 5 scooters (one is under maintenance) and 6 bookings in different statuses, dated around today.
+
+```bash
+npm test             # API, pricing and demo-build tests (9 tests)
 npm run seed         # reset data/db.json to sample data (overwrites!)
 ```
 
@@ -69,8 +81,11 @@ Deposit ₱1,000 · Extra helmet ₱50 · Phone holder ₱30 · Port/resort deli
 ```
 server.js            HTTP server, API routes, static files, auth
 lib/db.js            JSON-file storage (atomic writes)
-lib/seed.js          Default settings + sample fleet/bookings
-lib/messages.js      Message templates + webhook/Telegram/email alerts
+lib/seed.js          Seeds the database (sample data from core.js + admin password)
+lib/messages.js      Webhook / Telegram / email new-booking alerts
+public/js/core.js    Booking rules (availability, validation, reports, messages), shared by server + demo
+public/js/demo-api.js  In-browser backend for the one-file demo
+scripts/build-demo.js  Builds dist/baybayin-demo.html
 public/index.html    Customer app shell
 public/js/app.js     Customer booking flow
 public/js/admin.js   Admin dashboard

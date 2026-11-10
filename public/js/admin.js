@@ -129,8 +129,8 @@
       '<div class="seg" style="margin-top:8px" id="depSeg">' + [['pending', 'Deposit pending'], ['collected', 'Collected'], ['refunded', 'Refunded']].map(function (d) {
         return '<button data-dep="' + d[0] + '" class="' + (b.deposit === d[0] ? 'on' : '') + '">' + d[1] + '</button>'; }).join('') + '</div>' +
       '<div class="proof">' +
-        (b.licensePhoto ? '<h3 style="margin-top:16px">Driver\'s license</h3><a href="/api/admin/files/' + b.licensePhoto + '" target="_blank"><img loading="lazy" src="/api/admin/files/' + b.licensePhoto + '" alt="License"></a>' : '<p class="small muted" style="margin-top:12px">No license photo (sample booking).</p>') +
-        (b.payment.proof ? '<h3>GCash proof</h3><a href="/api/admin/files/' + b.payment.proof + '" target="_blank"><img loading="lazy" src="/api/admin/files/' + b.payment.proof + '" alt="GCash proof"></a>' : '') +
+        (b.licensePhoto ? '<h3 style="margin-top:16px">Driver\'s license</h3><a href="' + UI.fileUrl(b.licensePhoto) + '" target="_blank"><img loading="lazy" src="' + UI.fileUrl(b.licensePhoto) + '" alt="License"></a>' : '<p class="small muted" style="margin-top:12px">No license photo (sample booking).</p>') +
+        (b.payment.proof ? '<h3>GCash proof</h3><a href="' + UI.fileUrl(b.payment.proof) + '" target="_blank"><img loading="lazy" src="' + UI.fileUrl(b.payment.proof) + '" alt="GCash proof"></a>' : '') +
       '</div>' +
       '<h3 style="margin-top:16px">Messages</h3><div id="msgs"><div class="spinner"></div></div>' +
       '<label class="f" for="notes">Internal notes</label><textarea id="notes" placeholder="e.g. fuel level, damage, helmet no.">' + esc(b.notes || '') + '</textarea>' +
@@ -218,7 +218,8 @@
       (late.length ? '<h3 style="color:var(--err)">⚠️ Overdue returns</h3>' + mini(late, 'return') : '') +
       '<h3 style="margin-top:14px">Pickups today</h3>' + mini(pick, 'pickup') +
       '<h3 style="margin-top:14px">Returns today</h3>' + mini(rets, 'return') +
-      '<div class="spacer"></div><a class="btn alt" href="/api/admin/export.csv">⬇️ Export all bookings (CSV)</a></section></div>';
+      '<div class="spacer"></div><a class="btn alt" id="exportCsv" href="/api/admin/export.csv">⬇️ Export all bookings (CSV)</a></section></div>';
+    if (UI.exportCsv) $('#exportCsv').onclick = function (e) { e.preventDefault(); UI.exportCsv(); };
     $$('.bk').forEach(function (el) { el.onclick = function () { openBooking(el.dataset.id); }; });
   }
 
@@ -246,7 +247,7 @@
     var photo = u.photo;
     var f = function (k, label, type, extra) { return '<label class="f" for="u_' + k + '">' + label + '</label><input id="u_' + k + '" type="' + (type || 'text') + '" value="' + esc(u[k]) + '"' + (extra || '') + '>'; };
     UI.modal(id ? 'Edit scooter' : 'Add scooter',
-      photoPicker('uPhoto', u.photo ? '/media/' + u.photo : '', u.photo ? 'Tap to change photo' : 'Tap to add a photo') +
+      photoPicker('uPhoto', u.photo ? UI.mediaUrl(u.photo) : '', u.photo ? 'Tap to change photo' : 'Tap to add a photo') +
       f('name', 'Model name', 'text', ' placeholder="Honda Click 125"') + f('plate', 'Plate number (admin only)') +
       f('description', 'Short description') +
       '<div class="grid2">' + f('dailyRate', 'Daily rate ₱', 'number', ' inputmode="numeric"') + f('halfDayRate', 'Half-day ₱ (0 = off)', 'number', ' inputmode="numeric"') +
@@ -261,7 +262,7 @@
           var box = $('#uPhotoBox', body); box.querySelector('b').textContent = 'Uploading…';
           uploadPublic(e.target.files[0]).then(function (file) {
             photo = file; var img = box.querySelector('img') || box.insertBefore(document.createElement('img'), box.querySelector('div'));
-            img.src = '/media/' + file; box.querySelector('b').textContent = 'Tap to change photo';
+            img.src = UI.mediaUrl(file); box.querySelector('b').textContent = 'Tap to change photo';
           }, function (err) { UI.toast(err.message); box.querySelector('b').textContent = 'Tap to add a photo'; });
         };
         $('#uSave', body).onclick = function () {
@@ -295,7 +296,7 @@
       '<div class="card"><h3>📜 Rental terms</h3><p class="small muted">One rule per line. Use {deposit}, {lateFee}, {cancelHours} to insert current values.</p>' +
         '<textarea id="terms" style="min-height:200px">' + esc(s.terms.join('\n')) + '</textarea></div>' +
       '<div class="card"><h3>📱 GCash</h3>' + inp('gcashNumber', 'GCash number') + inp('gcashName', 'Account name') +
-        '<label class="f">GCash QR code</label>' + photoPicker('qr', s.gcashQr ? '/media/' + s.gcashQr : '', s.gcashQr ? 'Tap to replace QR' : 'Upload QR image') +
+        '<label class="f">GCash QR code</label>' + photoPicker('qr', s.gcashQr ? UI.mediaUrl(s.gcashQr) : '', s.gcashQr ? 'Tap to replace QR' : 'Upload QR image') +
         (s.gcashQr ? '<button class="btn sm ghost" id="rmQr">Remove QR</button>' : '') + '</div>' +
       '<div class="card"><h3>🏝️ Shop info</h3>' + inp('shopName', 'Shop name') + inp('tagline', 'Tagline') +
         '<label class="f" for="s_intro">Intro</label><textarea id="s_intro" data-k="intro">' + esc(s.intro) + '</textarea>' +
@@ -320,7 +321,7 @@
       }).join('');
     }
     function drawGallery() {
-      $('#gal').innerHTML = gallery.map(function (g, i) { return '<div class="t"><img src="/media/' + esc(g) + '" alt=""><button data-g="' + i + '" aria-label="Remove">✕</button></div>'; }).join('') || '<span class="small muted">No photos yet</span>';
+      $('#gal').innerHTML = gallery.map(function (g, i) { return '<div class="t"><img src="' + UI.mediaUrl(g) + '" alt=""><button data-g="' + i + '" aria-label="Remove">✕</button></div>'; }).join('') || '<span class="small muted">No photos yet</span>';
     }
     drawAddons(); drawGallery();
     $('#addons').addEventListener('input', function (e) {
@@ -336,7 +337,7 @@
       UI.toast('Uploading…');
       uploadPublic(e.target.files[0], 700).then(function (f) {
         qr = f; var box = $('#qrBox'); var img = box.querySelector('img') || box.insertBefore(document.createElement('img'), box.querySelector('div'));
-        img.src = '/media/' + f; UI.toast('QR uploaded — remember to Save');
+        img.src = UI.mediaUrl(f); UI.toast('QR uploaded — remember to Save');
       }, function (er) { UI.toast(er.message); });
     };
     if ($('#rmQr')) $('#rmQr').onclick = function () { qr = null; var img = $('#qrBox img'); if (img) img.remove(); };
