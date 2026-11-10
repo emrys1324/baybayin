@@ -24,7 +24,7 @@ const css = read('css/app.css') + '\n' + read('css/admin.css') + `
 .demo-ribbon button.ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.4); }`;
 
 const templates = { customer: bodyOf(read('index.html')), admin: bodyOf(read('admin.html')) };
-const lib = ['js/shared.js', 'js/ui.js', 'js/core.js', 'js/demo-api.js'].map((f) => safeScript(read(f), f)).join('\n;\n');
+const lib = ['js/shared.js', 'js/ui.js', 'js/i18n.js', 'js/core.js', 'js/demo-api.js'].map((f) => safeScript(read(f), f)).join('\n;\n');
 const appSrc = safeScript(read('js/app.js'), 'app.js');
 const adminSrc = safeScript(read('js/admin.js'), 'admin.js');
 

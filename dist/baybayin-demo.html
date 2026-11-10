@@ -39,6 +39,7 @@ p { margin: 0 0 .75rem; }
 .topbar .wrap { display: flex; align-items: center; gap: 10px; height: 56px; }
 .brand { font-weight: 800; color: var(--ocean-d); text-decoration: none; display: flex; align-items: center; gap: 8px; flex: 1; font-size: 1.05rem; }
 .brand svg { width: 30px; height: 30px; }
+.langbtn { border: 1.5px solid var(--line); background: #fff; color: var(--ocean-d); border-radius: 999px; min-height: 36px; padding: 4px 12px; font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer; }
 .iconbtn { border: 0; background: none; min-width: 44px; height: 44px; border-radius: 12px; font-size: 1.4rem; color: var(--ocean-d); cursor: pointer; }
 
 /* hero */
@@ -243,6 +244,17 @@ body.admin { background: #f6fafb; padding-bottom: calc(80px + var(--safe-b)); }
 pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; padding: 10px; font: .85rem/1.45 ui-monospace, Menlo, monospace; max-height: 220px; overflow: auto; }
 .search { margin-top: 12px; }
 
+.tag { display: inline-block; font-size: .68rem; font-weight: 700; padding: 1px 6px; border-radius: 6px; background: var(--sand); color: var(--ink); margin-left: 6px; vertical-align: middle; }
+.setup-banner { display: block; width: 100%; text-align: left; margin-top: 12px; background: #fff4dc; color: #6b4a00; border: 1px solid #f0d58f; border-radius: var(--r); padding: 12px 14px; font: inherit; cursor: pointer; }
+.card.setup { border-color: #f0d58f; }
+.checklist { list-style: none; padding: 0; margin: 0; }
+.checklist li { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.checklist li:last-child { border: 0; }
+.checklist li > div { flex: 1; }
+.checklist li.done b { color: var(--muted); font-weight: 600; }
+.checklist .ck { font-size: 1.1rem; }
+.sms-log { padding-left: 1.1rem; margin: 8px 0 0; }
+
 .demo-ribbon { background: #17323f; color: #fff; font-size: .8rem; padding: 6px 0; }
 .demo-ribbon .wrap { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; max-width: 1100px; }
 .demo-ribbon b { color: #ffd36b; }
@@ -440,14 +452,15 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
     return close;
   };
 
+  var tr = function (s) { return window.I18N ? window.I18N.t(s) : s; };
   UI.copy = function (text) {
     function fallback() {
       var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
       document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); UI.toast('Copied!'); } catch (e) { UI.toast('Could not copy — please select and copy.'); }
+      try { document.execCommand('copy'); UI.toast(tr('Copied!')); } catch (e) { UI.toast('Could not copy — please select and copy.'); }
       ta.remove();
     }
-    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(function () { UI.toast('Copied!'); }, fallback);
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(function () { UI.toast(tr('Copied!')); }, fallback);
     else fallback();
   };
 
@@ -496,6 +509,188 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
 })();
 
 ;
+/* English / Tagalog for the customer site. Keys are the English text; missing keys fall back to English.
+   I18N.t(text, vars)  -> translated text with {var} placeholders filled
+   I18N.tx(text)       -> translate dynamic text from the server/shared code (errors, price labels) */
+(function () {
+  'use strict';
+  var TL = {
+    // landing
+    'Book a Scooter': 'Mag-book ng Scooter',
+    '{open} – {close} daily': '{open} – {close} araw-araw',
+    'Helmet included': 'Kasama ang helmet',
+    'Cash or GCash': 'Cash o GCash',
+    'Our scooters': 'Aming mga scooter',
+    'from': 'mula',
+    'Refundable deposit {deposit}. Multi-day discounts for {days}+ days.': 'Refundable deposit na {deposit}. May discount kapag {days} araw pataas.',
+    'Photos': 'Mga larawan',
+    'Shop photo': 'Larawan ng shop',
+    'Find us': 'Paano kami puntahan',
+    'Pickup & return': 'Pickup at balik',
+    '{open} – {close}, every day': '{open} – {close}, araw-araw',
+    'Coming by ferry or RoRo?': 'Darating sakay ng barko o RoRo?',
+    'Add port delivery and we\'ll meet you there.': 'Piliin ang port delivery at sasalubungin ka namin doon.',
+    'Directions': 'Direksyon',
+    'Find my booking': 'Hanapin ang booking ko',
+    'Rental terms': 'Mga patakaran sa pag-rent',
+    'Got it': 'Sige',
+    'Salamat po sa pagbisita!': 'Salamat po sa pagbisita!',
+    // steps
+    'When': 'Kailan', 'Scooter': 'Scooter', 'Extras': 'Extras', 'Your details': 'Detalye mo', 'Payment': 'Bayad',
+    'Step {n} of {total}': 'Hakbang {n} sa {total}',
+    'Total': 'Kabuuan',
+    'Back': 'Bumalik',
+    'When do you need it?': 'Kailan mo kailangan?',
+    'Pickup & return at our shop, {open} – {close} (Philippine time).': 'Pickup at balik sa aming shop, {open} – {close} (oras sa Pilipinas).',
+    'Pickup': 'Pickup', 'Return': 'Balik',
+    'Pickup date': 'Petsa ng pickup', 'Pickup time': 'Oras ng pickup', 'Return date': 'Petsa ng balik', 'Return time': 'Oras ng balik',
+    'How long?': 'Gaano katagal?',
+    'Half day': 'Kalahating araw', '1 day': '1 araw', '2 days': '2 araw', '3 days': '3 araw', '1 week': '1 linggo',
+    'See scooters': 'Tingnan ang scooters',
+    'Rental length:': 'Haba ng renta:',
+    'Checking…': 'Tinitingnan…',
+    'Choose your scooter': 'Pumili ng scooter',
+    'All scooters are booked for these dates. Try different dates or message us on Messenger.': 'Booked na lahat ng scooter sa mga petsang ito. Subukan ang ibang petsa o mag-message sa amin sa Messenger.',
+    '1 left': '1 na lang', '{n} available': '{n} available', 'Booked': 'Booked na',
+    'Change dates': 'Palitan ang petsa',
+    'Continue': 'Tuloy',
+    'Tap a scooter': 'Pumili ng scooter',
+    // price
+    'Rental total': 'Kabuuang renta',
+    'Refundable deposit': 'Refundable deposit',
+    'paid in cash at pickup, returned after': 'cash sa pickup, ibabalik pagkatapos',
+    'Bring at pickup': 'Dalhin sa pickup',
+    '(deposit only)': '(deposit lang)',
+    'Add extras': 'Magdagdag ng extras',
+    '/ day': '/ araw',
+    'Less': 'Bawasan', 'More': 'Dagdagan',
+    'Price breakdown': 'Detalye ng presyo',
+    'One helmet is included. Riding with a passenger? Add an extra helmet.': 'May kasamang isang helmet. May angkas ka? Magdagdag ng extra helmet.',
+    'Extra helmet': 'Extra helmet', 'Phone holder': 'Phone holder', 'Delivery to port / resort': 'Hatid sa port / resort',
+    // details
+    'Full name': 'Buong pangalan',
+    'Mobile number': 'Mobile number',
+    'Foreign number? Start with + and country code.': 'Foreign number? Simulan sa + at country code.',
+    'Facebook / Messenger name': 'Pangalan sa Facebook / Messenger',
+    'So we can message you': 'Para ma-message ka namin',
+    'Where are you staying?': 'Saan ka tutuloy?',
+    'Resort, homestay or barangay': 'Resort, homestay o barangay',
+    'Arriving by ferry': 'Darating sakay ng barko', 'Arriving by RoRo': 'Darating sakay ng RoRo',
+    'San Agustin town': 'Bayan ng San Agustin', 'Local resident': 'Taga-rito',
+    'Email': 'Email', '(optional)': '(opsyonal)',
+    'Number of riders': 'Ilang sasakay',
+    '1 rider': '1 sakay', '{n} riders': '{n} sakay',
+    'Driver\'s license photo': 'Litrato ng driver\'s license',
+    'Tap to take or upload a photo of your license': 'I-tap para kunan o i-upload ang litrato ng lisensya mo',
+    'Clear photo of the front side. Bring the original at pickup.': 'Malinaw na litrato ng harap. Dalhin ang original sa pickup.',
+    'I agree to the {terms} (license, helmet, damage, fuel, late fees, cancellation).': 'Sang-ayon ako sa {terms} (lisensya, helmet, sira, gasolina, late fee, pag-cancel).',
+    'rental terms': 'mga patakaran sa pag-rent',
+    'Continue to payment': 'Tuloy sa bayad',
+    'Tip: add an extra helmet for your passenger': 'Tip: magdagdag ng extra helmet para sa angkas mo',
+    'Please enter your full name.': 'Pakilagay ang buong pangalan mo.',
+    'Please enter a valid mobile number (e.g. 0917 123 4567).': 'Pakilagay ang tamang mobile number (hal. 0917 123 4567).',
+    'Please check your email address.': 'Pakitingnan ang email address mo.',
+    'Please add a photo of your driver\'s license.': 'Pakilagay ang litrato ng driver\'s license mo.',
+    'Please upload a photo of your driver\'s license.': 'Pakilagay ang litrato ng driver\'s license mo.',
+    'Please agree to the rental terms.': 'Pakisang-ayunan ang mga patakaran sa pag-rent.',
+    'Photo added · tap to change': 'Naidagdag na ang litrato · i-tap para palitan',
+    'Compressing photo…': 'Pinapaliit ang litrato…',
+    'Preview': 'Preview',
+    // payment
+    'Pay at pickup (cash)': 'Bayad sa pickup (cash)',
+    'Pay via GCash': 'Bayad via GCash',
+    'Send {amount} to:': 'Ipadala ang {amount} sa:',
+    'Copy number': 'Kopyahin ang number',
+    'GCash reference number': 'GCash reference number',
+    'e.g. 1009 123 456789': 'hal. 1009 123 456789',
+    'Payment screenshot': 'Screenshot ng bayad',
+    'Upload GCash screenshot': 'I-upload ang GCash screenshot',
+    'GCash QR code': 'GCash QR code',
+    'Pay the rental and deposit in cash when you pick up your scooter.': 'Bayaran ang renta at deposit nang cash pagkuha mo ng scooter.',
+    'Summary': 'Buod',
+    'Confirm booking': 'Kumpirmahin ang booking',
+    'Sending…': 'Ipinapadala…',
+    'Please enter your GCash reference number.': 'Pakilagay ang GCash reference number mo.',
+    'Please upload your GCash payment screenshot.': 'Paki-upload ang screenshot ng GCash payment mo.',
+    'Please add your license photo again': 'Pakilagay ulit ang litrato ng lisensya mo',
+    // confirmation & lookup
+    'Refundable deposit (at pickup)': 'Refundable deposit (sa pickup)',
+    'Payment:': 'Bayad:',
+    'GCash (we\'ll verify your reference)': 'GCash (ive-verify namin ang reference mo)',
+    'Cash at pickup': 'Cash sa pickup',
+    'Status:': 'Status:',
+    'Pending': 'Naghihintay ng kumpirmasyon', 'Confirmed': 'Kumpirmado', 'Picked Up': 'Nakuha na',
+    'Returned': 'Naibalik na', 'Cancelled': 'Kinansela',
+    'Hi! I just booked {ref} ({model}, {when}).': 'Hi! Nag-book ako ng {ref} ({model}, {when}).',
+    'Salamat, {name}!': 'Salamat, {name}!',
+    'Your booking request is in. Your reference code:': 'Natanggap na namin ang booking mo. Ang reference code mo:',
+    'We\'ll confirm on Messenger or SMS shortly. Screenshot this page for easy reference.': 'Kukumpirmahin namin agad sa Messenger o SMS. I-screenshot ang page na ito para madaling balikan.',
+    'Message us on Messenger': 'Mag-message sa amin sa Messenger',
+    'Pickup point': 'Lugar ng pickup',
+    'Get directions': 'Direksyon papunta',
+    'Don\'t forget your original driver\'s license and {deposit} cash deposit. Ingat sa biyahe!': 'Huwag kalimutan ang original na driver\'s license at {deposit} na cash deposit. Ingat sa biyahe!',
+    'Back to home': 'Bumalik sa home',
+    'Booking reference': 'Booking reference',
+    'Mobile number used': 'Mobile number na ginamit',
+    'Find booking': 'Hanapin',
+    'Message us': 'Mag-message sa amin',
+    // errors from the server / network
+    'No booking found with that reference and mobile number.': 'Walang nahanap na booking sa reference at mobile number na iyan.',
+    'Sorry, that scooter was just booked for those dates. Please pick another one.': 'Pasensya na, kaka-book lang ng scooter na iyan sa mga petsang iyan. Pumili ng iba.',
+    'No connection. Please check your signal and try again.': 'Walang koneksyon. Tingnan ang signal mo at subukan ulit.',
+    'Network error, please try again.': 'May problema sa network, subukan ulit.',
+    'Something went wrong. Please try again.': 'Nagka-problema. Pakisubukan ulit.',
+    'Online booking is being set up. Please message us on Facebook Messenger to book.': 'Inaayos pa ang online booking. Mag-message sa amin sa Facebook Messenger para mag-book.',
+    'Try again': 'Subukan ulit',
+    'Copied!': 'Nakopya!',
+    'Please choose pickup and return date & time.': 'Pumili ng petsa at oras ng pickup at balik.',
+    'Return must be after pickup.': 'Dapat mas huli ang balik kaysa sa pickup.',
+    'Please choose a photo (JPG or PNG).': 'Pumili ng litrato (JPG o PNG).',
+    'Could not read that photo. Try another one.': 'Hindi mabasa ang litratong iyan. Subukan ang iba.',
+    // language toggle
+    'Switch language': 'Palitan ang wika'
+  };
+
+  // Dynamic messages built elsewhere (shared.js validation, price labels, durations).
+  var PATTERNS = [
+    [/^Pickup must be between (.+) and (.+)\.$/, 'Ang pickup ay dapat mula $1 hanggang $2.'],
+    [/^Return must be between (.+) and (.+)\.$/, 'Ang balik ay dapat mula $1 hanggang $2.'],
+    [/^Pickup needs to be at least (\d+) minutes from now\.$/, 'Ang pickup ay dapat hindi bababa sa $1 minuto mula ngayon.'],
+    [/^Minimum rental is (\d+) hours\.$/, 'Ang pinakamaikling renta ay $1 oras.'],
+    [/^For rentals longer than (\d+) days, please message us\.$/, 'Para sa rentang lampas $1 araw, mag-message sa amin.'],
+    [/^Half-day \(up to (\d+) hrs\)$/, 'Kalahating araw (hanggang $1 oras)'],
+    [/^(\d+) days? × (₱[\d,]+) \(multi-day rate\)$/, '$1 araw × $2 (multi-day rate)'],
+    [/^(\d+) days? × (₱[\d,]+)$/, '$1 araw × $2'],
+    [/^(\d+) days? (\d+) hrs$/, '$1 araw $2 oras'],
+    [/^(\d+) days?$/, '$1 araw'],
+    [/^([\d.]+) hrs$/, '$1 oras']
+  ];
+
+  var lang = 'en';
+  try { lang = localStorage.getItem('bay_lang') || ''; } catch (e) {}
+  if (lang !== 'en' && lang !== 'tl') lang = /^(fil|tl)\b/i.test(navigator.language || '') ? 'tl' : 'en';
+
+  function fill(s, vars) {
+    return vars ? s.replace(/\{(\w+)\}/g, function (m, k) { return k in vars ? vars[k] : m; }) : s;
+  }
+  function t(s, vars) { return fill(lang === 'tl' && TL[s] ? TL[s] : s, vars); }
+  function tx(s) {
+    if (lang !== 'tl' || !s) return s;
+    if (TL[s]) return TL[s];
+    for (var i = 0; i < PATTERNS.length; i++) if (PATTERNS[i][0].test(s)) return s.replace(PATTERNS[i][0], PATTERNS[i][1]);
+    return s;
+  }
+  function setLang(l) {
+    lang = l === 'tl' ? 'tl' : 'en';
+    try { localStorage.setItem('bay_lang', lang); } catch (e) {}
+    document.documentElement.lang = lang === 'tl' ? 'tl' : 'en';
+  }
+  document.documentElement.lang = lang === 'tl' ? 'tl' : 'en';
+
+  window.I18N = { t: t, tx: tx, setLang: setLang, get lang() { return lang; }, TL: TL };
+})();
+
+;
 /* Booking business rules, shared by the Node server and the standalone browser demo.
    Pure functions over a plain data object { settings, units, bookings, counter }; no I/O.
    Errors are thrown as Error objects with a numeric .status (HTTP-style). */
@@ -521,7 +716,9 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
     return {
       shopName: 'Baybayin Scooter Rental',
       tagline: 'Explore San Agustin & Tablas Island on two wheels',
+      taglineTl: 'Libutin ang San Agustin at Tablas Island sakay ng scooter',
       intro: 'Fresh off the ferry? Grab a well-maintained scooter and ride to the falls, beaches and viewpoints of Tablas at your own pace. Helmets included. Mabuhay!',
+      introTl: 'Kababa lang ng barko? Mag-rent ng maayos na scooter at puntahan ang mga talon, beach at viewpoint ng Tablas sa sarili mong oras. Kasama na ang helmet. Mabuhay!',
       address: 'Sitio Sawang, Brgy. Dubduban, San Agustin, Romblon',
       landmark: 'Beside the FilOil gas station and Mon\'s Pahuway Café',
       mapsUrl: 'https://www.google.com/maps/search/?api=1&query=FilOil+Dubduban+San+Agustin+Romblon',
@@ -546,6 +743,9 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
       freeCancelHours: 24,
       maxRiders: 2,
       adminEmail: '',
+      smsOnReceived: false,  // auto-SMS "we got your booking" (needs SMS gateway configured)
+      smsOnConfirm: true,    // auto-SMS when admin confirms a booking
+      pricesReviewed: false, // go-live checklist
       addons: [
         { id: 'helmet', name: 'Extra helmet', price: 50, perDay: false, maxQty: 2, active: true },
         { id: 'holder', name: 'Phone holder', price: 30, perDay: false, maxQty: 1, active: true },
@@ -559,6 +759,15 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
         'Late returns are charged {lateFee} per hour.',
         'A refundable security deposit of {deposit} is collected at pickup and returned when the scooter comes back in good condition.',
         'Free cancellation up to {cancelHours} hours before pickup. Please message us on Messenger to cancel.'
+      ],
+      termsTl: [
+        'Kailangan ng valid na driver\'s license. Dalhin ang original sa pickup.',
+        'Laging magsuot ng helmet, pati ang angkas.',
+        'Sagot ng nag-rent ang anumang sira, pagkawala, at traffic violation habang naka-rent.',
+        'Ibalik ang scooter na pareho ang dami ng gasolina gaya noong kinuha.',
+        'May bayad na {lateFee} kada oras ang late na pagbalik.',
+        'May refundable na security deposit na {deposit} na kukunin sa pickup at ibabalik kapag maayos ang scooter.',
+        'Libre ang pag-cancel hanggang {cancelHours} oras bago ang pickup. Mag-message lang sa amin sa Messenger.'
       ]
     };
   }
@@ -689,7 +898,7 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
     if (method === 'gcash' && !body.payment.proof) fail(400, 'Please upload your GCash payment screenshot.');
     const addonSel = {};
     Object.entries(body.addons || {}).forEach(([k, v]) => { addonSel[str(k, 40)] = num(v, 0, 10); });
-    return { pickup, ret, customer, method, gcashRef, addonSel, model: str(body.model, 80) };
+    return { pickup, ret, customer, method, gcashRef, addonSel, model: str(body.model, 80), lang: body.lang === 'tl' ? 'tl' : 'en' };
   }
   /** Re-check availability and store the booking. Must run synchronously after the final check (no double-booking race). */
   function commitBooking(data, draft, files, genId) {
@@ -703,10 +912,68 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
       addonSel: draft.addonSel, quote: BAY.quote(unit, draft.pickup, draft.ret, draft.addonSel, data.settings),
       customer: draft.customer, licensePhoto: files.licensePhoto || null,
       payment: { method: draft.method, gcashRef: draft.gcashRef, proof: files.proof || null, status: 'unpaid' },
-      deposit: 'pending', notes: '', history: [{ at: now, status: 'pending' }]
+      deposit: 'pending', notes: '', history: [{ at: now, status: 'pending' }],
+      lang: draft.lang || 'en', source: 'online', sms: []
     };
     data.bookings.push(booking);
     return booking;
+  }
+
+  /** Validate an admin walk-in booking (customer at the counter). Returns a draft or throws. */
+  function prepareWalkIn(data, body) {
+    const unit = data.units.find((u) => u.id === body.scooterId);
+    if (!unit) fail(400, 'Please choose a scooter.');
+    if (unit.status === 'maintenance') fail(400, `${unit.name} (${unit.plate}) is under maintenance.`);
+    const pickup = str(body.pickup, 16), ret = str(body.return, 16);
+    if (!BAY.isLocal(pickup) || !BAY.isLocal(ret)) fail(400, 'Please set the pickup and return date & time.');
+    if (BAY.toEpoch(ret) <= BAY.toEpoch(pickup)) fail(400, 'Return must be after pickup.');
+    if (BAY.toEpoch(ret) - BAY.toEpoch(pickup) > (data.settings.maxDays || 30) * 864e5) fail(400, 'That rental is longer than the maximum allowed.');
+    const c = body.customer || {};
+    const customer = {
+      name: str(c.name, 80), mobile: str(c.mobile, 20).replace(/[^\d+]/g, ''), email: str(c.email, 120),
+      fb: str(c.fb, 80), stayingAt: str(c.stayingAt, 120), riders: num(c.riders, 1, data.settings.maxRiders || 2)
+    };
+    if (customer.name.length < 2) fail(400, 'Please enter the customer\'s name.');
+    if (customer.mobile && !/^(\+?63|0)9\d{9}$/.test(customer.mobile) && !/^\+\d{8,15}$/.test(customer.mobile)) fail(400, 'Please check the mobile number.');
+    const status = body.status === 'confirmed' ? 'confirmed' : 'picked_up';
+    const addonSel = {};
+    Object.entries(body.addons || {}).forEach(([k, v]) => { addonSel[str(k, 40)] = num(v, 0, 10); });
+    return {
+      unitId: unit.id, pickup, ret, customer, status, addonSel,
+      method: body.method === 'gcash' ? 'gcash' : 'cash', gcashRef: str(body.gcashRef, 40),
+      paid: !!body.paid, depositCollected: status === 'picked_up' && body.depositCollected !== false,
+      notes: str(body.notes, 1000), lang: body.lang === 'tl' ? 'tl' : 'en'
+    };
+  }
+  /** Store a walk-in booking. Re-checks that the chosen unit is free (call under the store lock). */
+  function commitWalkIn(data, draft, files, genId) {
+    const unit = data.units.find((u) => u.id === draft.unitId);
+    if (!unit) fail(400, 'Please choose a scooter.');
+    if (unitBusy(data, unit.id, draft.pickup, draft.ret)) fail(409, `${unit.name} (${unit.plate}) is already booked during this time.`);
+    data.counter = (data.counter || 0) + 1;
+    const now = new Date().toISOString();
+    const booking = {
+      id: (genId || (() => randomId(6)))(), ref: 'BAY-' + String(data.counter).padStart(4, '0'), createdAt: now, status: draft.status,
+      scooterId: unit.id, model: unit.name, pickup: draft.pickup, return: draft.ret,
+      addonSel: draft.addonSel, quote: BAY.quote(unit, draft.pickup, draft.ret, draft.addonSel, data.settings),
+      customer: draft.customer, licensePhoto: (files && files.licensePhoto) || null,
+      payment: { method: draft.method, gcashRef: draft.gcashRef, proof: null, status: draft.paid ? 'paid' : 'unpaid' },
+      deposit: draft.depositCollected ? 'collected' : 'pending', notes: draft.notes,
+      history: [{ at: now, status: draft.status }], lang: draft.lang, source: 'walk-in', sms: []
+    };
+    if (draft.status === 'picked_up') unit.status = 'rented';
+    data.bookings.push(booking);
+    return booking;
+  }
+
+  /** Remove the sample bookings shipped with a fresh install. Returns removed ids. */
+  function clearSamples(data) {
+    const removed = data.bookings.filter((b) => b.sample).map((b) => b.id);
+    data.bookings = data.bookings.filter((b) => !b.sample);
+    data.units.forEach((u) => {
+      if (u.status === 'rented' && !data.bookings.some((b) => b.scooterId === u.id && b.status === 'picked_up')) u.status = 'available';
+    });
+    return removed;
   }
   function hasFreeUnit(data, draft) {
     return freeUnits(data, draft.pickup, draft.ret).some((u) => u.name === draft.model);
@@ -783,6 +1050,10 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
     ['shopName', 'tagline', 'address', 'landmark', 'mapsUrl', 'phone', 'messengerUrl', 'gcashNumber', 'gcashName', 'adminEmail']
       .forEach((k) => { if (k in body) s[k] = str(body[k], 300); });
     if ('intro' in body) s.intro = str(body.intro, 1000);
+    if ('introTl' in body) s.introTl = str(body.introTl, 1000);
+    if ('taglineTl' in body) s.taglineTl = str(body.taglineTl, 300);
+    ['smsOnReceived', 'smsOnConfirm', 'pricesReviewed'].forEach((k) => { if (k in body) s[k] = !!body[k]; });
+    if (Array.isArray(body.termsTl)) s.termsTl = body.termsTl.map((t) => str(t, 500)).filter(Boolean).slice(0, 30);
     ['openTime', 'closeTime'].forEach((k) => { if (/^\d{2}:\d{2}$/.test(body[k] || '')) s[k] = body[k]; });
     const nums = { slotMinutes: [15, 120], leadMinutes: [0, 10080], bufferMinutes: [0, 1440], graceMinutes: [0, 600], minHours: [1, 48],
       maxDays: [1, 365], halfDayHours: [1, 23], multiDayMinDays: [2, 60], deposit: [0, 1e6], lateFeePerHour: [0, 1e5],
@@ -829,12 +1100,12 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
   function exportCsv(data) {
     const unitById = Object.fromEntries(data.units.map((u) => [u.id, u]));
     const rows = [['Ref', 'Created', 'Status', 'Scooter', 'Plate', 'Pickup', 'Return', 'Name', 'Mobile', 'Email', 'Facebook', 'Staying at',
-      'Riders', 'Add-ons', 'Rental', 'Add-ons total', 'Total', 'Deposit', 'Deposit status', 'Payment', 'GCash ref', 'Payment status', 'Notes']];
+      'Riders', 'Add-ons', 'Rental', 'Add-ons total', 'Total', 'Deposit', 'Deposit status', 'Payment', 'GCash ref', 'Payment status', 'Source', 'Language', 'Notes']];
     data.bookings.slice().sort((a, b) => a.pickup.localeCompare(b.pickup)).forEach((b) => rows.push([
       b.ref, b.createdAt, BAY.STATUS_LABELS[b.status], b.model, (unitById[b.scooterId] || {}).plate, b.pickup.replace('T', ' '), b.return.replace('T', ' '),
       b.customer.name, b.customer.mobile, b.customer.email, b.customer.fb, b.customer.stayingAt, b.customer.riders,
       b.quote.addons.map((a) => a.name + ' x' + a.qty).join('; '), b.quote.rental, b.quote.addonsTotal, b.quote.total,
-      b.quote.deposit, b.deposit, b.payment.method, b.payment.gcashRef, b.payment.status, b.notes
+      b.quote.deposit, b.deposit, b.payment.method, b.payment.gcashRef, b.payment.status, b.source || 'online', b.lang || 'en', b.notes
     ]));
     return '﻿' + rows.map((r) => r.map((v) => {
       let s = String(v == null ? '' : v);
@@ -864,6 +1135,22 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
   }
   function customerConfirmation(b, s) {
     const first = (b.customer.name || '').split(' ')[0] || 'there';
+    if (b.lang === 'tl') {
+      return [
+        `Hi ${first}! CONFIRMED na ang scooter booking mo na ${b.ref} sa ${s.shopName}. 🛵`,
+        ``,
+        `Scooter: ${b.model}`,
+        `Pickup: ${BAY.fmtLocal(b.pickup)}`,
+        `Balik: ${BAY.fmtLocal(b.return)}`,
+        `Add-ons: ${b.quote.addons.length ? addonText(b) : 'wala'}`,
+        `Kabuuang renta: ${BAY.peso(b.quote.total)}${b.payment.method === 'gcash' && b.payment.status === 'paid' ? ' (bayad na via GCash, salamat!)' : ''}`,
+        `Refundable deposit: ${BAY.peso(b.quote.deposit)} (cash sa pickup)`,
+        ``,
+        `📍 ${s.address} — ${s.landmark}`,
+        `Mapa: ${s.mapsUrl}`,
+        `Dalhin ang original na driver's license. Kita-kits — Salamat po!`
+      ].join('\n');
+    }
     return [
       `Hi ${first}! Your scooter booking ${b.ref} with ${s.shopName} is CONFIRMED. 🛵`,
       ``,
@@ -879,10 +1166,42 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
       `Please bring your original driver's license. See you soon — Salamat po!`
     ].join('\n');
   }
+  /** Short SMS texts. Plain GSM characters only ("P" not "₱", no emoji) so each fits in 1–2 SMS credits. */
+  function smsText(b, s, kind) {
+    const when = BAY.fmtLocal(b.pickup).replace(/^\w+, /, '').replace(' · ', ' ').replace(' AM', 'AM').replace(' PM', 'PM');
+    const dep = 'P' + Math.round(b.quote.deposit).toLocaleString('en-US');
+    const tl = b.lang === 'tl';
+    if (kind === 'received') {
+      return tl
+        ? `${s.shopName}: Natanggap namin ang booking ${b.ref} (${b.model}, ${when}). Kukumpirmahin namin agad. Salamat po!`
+        : `${s.shopName}: We got your booking ${b.ref} (${b.model}, ${when}). We'll confirm shortly. Salamat!`;
+    }
+    return tl
+      ? `${s.shopName}: CONFIRMED na ang booking ${b.ref}. ${b.model}, pickup ${when}. Dalhin ang lisensya at ${dep} deposit. Salamat po!`
+      : `${s.shopName}: Booking ${b.ref} CONFIRMED. ${b.model}, pickup ${when}. Please bring your license and ${dep} deposit. Salamat po!`;
+  }
   function messages(data, id) {
     const b = data.bookings.find((x) => x.id === id);
     if (!b) fail(404, 'Not found');
-    return { admin: adminAlert(b), customer: customerConfirmation(b, data.settings) };
+    return { admin: adminAlert(b), customer: customerConfirmation(b, data.settings), sms: smsText(b, data.settings, 'confirm') };
+  }
+
+  /** Go-live checklist: what still looks like sample/placeholder setup. */
+  function setupChecklist(data, extra) {
+    const s = data.settings;
+    const item = (id, done, label, hint, tab) => ({ id, done: !!done, label, hint, tab });
+    return [
+      item('password', !extra.defaultPassword, 'Change the admin password', 'Still using the default password.', 'settings'),
+      item('gcash', !/0917 000 0000/.test(s.gcashNumber) && s.gcashName !== 'BAYBAYIN S. R.', 'Enter your GCash number and name', 'GCash details are placeholders.', 'settings'),
+      item('qr', s.gcashQr, 'Upload your GCash QR code', 'Customers scan this to pay.', 'settings'),
+      item('messenger', !/yourpage/.test(s.messengerUrl), 'Set your Messenger link', 'Still m.me/yourpage.', 'settings'),
+      item('phone', !/0917 000 0000/.test(s.phone), 'Set the shop phone number', 'Phone is a placeholder.', 'settings'),
+      item('photos', data.units.length && data.units.every((u) => u.photo), 'Add a photo for every scooter', data.units.filter((u) => !u.photo).length + ' scooter(s) have no photo.', 'fleet'),
+      item('prices', s.pricesReviewed, 'Review prices, deposit and add-ons', 'Sample prices were filled in for you.', 'settings'),
+      item('samples', !data.bookings.some((b) => b.sample), 'Delete the sample bookings', 'Test bookings from the demo data.', 'summary'),
+      item('storage', extra.storage !== 'none', 'Connect booking storage', 'Needed on Vercel (Upstash Redis).', null),
+      item('sms', extra.smsEnabled, 'Optional: connect SMS (Semaphore)', 'For automatic text confirmations.', null)
+    ];
   }
 
   return {
@@ -890,9 +1209,9 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
     defaultSettings, defaultUnits, buildSeedData,
     publicSettings, publicUnit, publicView,
     unitBusy, freeUnits, availability,
-    prepareBooking, hasFreeUnit, commitBooking, lookup, updateBooking,
+    prepareBooking, hasFreeUnit, commitBooking, prepareWalkIn, commitWalkIn, clearSamples, lookup, updateBooking,
     addUnit, editUnit, deleteUnit, updateSettings,
-    summary, exportCsv, adminAlert, customerConfirmation, messages
+    summary, exportCsv, adminAlert, customerConfirmation, smsText, messages, setupChecklist
   };
 });
 
@@ -959,9 +1278,20 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
       if (!session.get()) CORE.fail(401, 'Please log in.');
       var sub = p.slice(11), res;
       if (sub === 'me') return { ok: true };
-      if (sub === 'data') { var d = clone(data); delete d.demoPassword; d.summary = CORE.summary(data); d.now = BAY.nowLocal(); return d; }
+      if (sub === 'data') {
+        var d = clone(data); delete d.demoPassword;
+        var extra = { defaultPassword: (data.demoPassword || DEMO_PASSWORD) === DEMO_PASSWORD, smsEnabled: false, storage: 'browser' };
+        return Object.assign(d, extra, { summary: CORE.summary(data), now: BAY.nowLocal(), setup: CORE.setupChecklist(data, extra) });
+      }
       if ((mm = /^bookings\/([a-f0-9]+)$/.exec(sub))) { res = CORE.updateBooking(data, mm[1], body); save(); return { booking: res }; }
       if ((mm = /^bookings\/([a-f0-9]+)\/messages$/.exec(sub))) return CORE.messages(data, mm[1]);
+      if (/^bookings\/[a-f0-9]+\/sms$/.test(sub)) CORE.fail(400, 'SMS is not available in the demo.');
+      if (sub === 'walkins') {
+        var wd = CORE.prepareWalkIn(data, body);
+        var wb = CORE.commitWalkIn(data, wd, { licensePhoto: body.license ? saveImage(body.license) : null });
+        save(); return { booking: wb };
+      }
+      if (sub === 'sample-bookings') { var n = CORE.clearSamples(data).length; save(); return { removed: n }; }
       if (sub === 'units' && method === 'POST') { res = CORE.addUnit(data, body); save(); return { unit: res }; }
       if ((mm = /^units\/([a-z0-9]+)$/.exec(sub))) {
         if (method === 'PUT') { res = CORE.editUnit(data, mm[1], body); save(); return { unit: res }; }
@@ -1005,10 +1335,12 @@ pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; paddi
 
 ;
 function RUN_CUSTOMER() {
-/* Customer booking flow (vanilla JS, hash routing). */
+/* Customer booking flow (vanilla JS, hash routing). English / Tagalog via I18N. */
 (function () {
   'use strict';
   var $ = UI.$, $$ = UI.$$, esc = UI.esc, peso = BAY.peso;
+  var t = I18N.t, tx = I18N.tx;
+  var te = function (s, v) { return esc(t(s, v)); };      // translated + HTML-escaped
   var app = $('#app');
   var CFG = null;             // { settings, units }
   var S = loadState();        // booking-in-progress
@@ -1033,21 +1365,36 @@ function RUN_CUSTOMER() {
     var m = chosen();
     return m ? BAY.quote(m.unit, pickup(), ret(), S.addons, CFG.settings) : null;
   }
+  function errBox(msg) { return '<div class="err-box">' + esc(tx(msg)) + '</div>'; }
+  function hours(s) { return { open: BAY.fmtTime(s.openTime), close: BAY.fmtTime(s.closeTime) }; }
+
+  // ---------- language toggle ----------
+  function paintLangBtn() {
+    var b = $('#langBtn'); if (!b) return;
+    b.textContent = I18N.lang === 'tl' ? 'English' : 'Tagalog';
+    b.setAttribute('aria-label', t('Switch language'));
+  }
+  if ($('#langBtn')) $('#langBtn').onclick = function () {
+    I18N.setLang(I18N.lang === 'tl' ? 'en' : 'tl');
+    paintLangBtn();
+    if (CFG) route(true);
+  };
+  paintLangBtn();
 
   // ---------- boot ----------
   UI.api('GET', '/api/config').then(function (cfg) {
     CFG = cfg;
     $('#brandName').textContent = cfg.settings.shopName;
-    window.addEventListener('hashchange', route);
+    window.addEventListener('hashchange', function () { route(); });
     route();
   }).catch(function (e) {
-    app.innerHTML = '<div class="wrap"><div class="err-box">' + esc(e.message) + '</div><button class="btn" onclick="location.reload()">Try again</button></div>';
+    app.innerHTML = '<div class="wrap">' + errBox(e.message) + '<button class="btn" onclick="location.reload()">' + te('Try again') + '</button></div>';
   });
 
-  function route() {
+  function route(keepScroll) {
     var h = location.hash.replace(/^#\/?/, '');
     $$('.modal').forEach(function (m) { m.remove(); });
-    window.scrollTo(0, 0);
+    if (!keepScroll) window.scrollTo(0, 0);
     document.body.classList.remove('has-bar');
     if (h === 'book') return renderStep();
     if (h === 'done') return renderDone();
@@ -1057,35 +1404,35 @@ function RUN_CUSTOMER() {
 
   // ---------- landing ----------
   function renderHome() {
-    var s = CFG.settings;
+    var s = CFG.settings, tl = I18N.lang === 'tl';
     var byModel = {};
     CFG.units.forEach(function (u) { if (u.status !== 'maintenance' && !byModel[u.name]) byModel[u.name] = u; });
     var fleet = Object.keys(byModel).map(function (k) {
       var u = byModel[k];
       return '<div class="card"><img class="scooter-img" loading="lazy" alt="' + esc(u.name) + '" src="' + UI.unitPhoto(u) + '">' +
-        '<div class="name">' + esc(u.name) + '</div><div class="small muted">from <b>' + peso(u.halfDayRate || u.dailyRate) + '</b></div></div>';
+        '<div class="name">' + esc(u.name) + '</div><div class="small muted">' + te('from') + ' <b>' + peso(u.halfDayRate || u.dailyRate) + '</b></div></div>';
     }).join('');
-    var gallery = (s.gallery || []).map(function (g) { return '<img loading="lazy" alt="Shop photo" src="' + UI.mediaUrl(g) + '">'; }).join('');
+    var gallery = (s.gallery || []).map(function (g) { return '<img loading="lazy" alt="' + te('Shop photo') + '" src="' + UI.mediaUrl(g) + '">'; }).join('');
     app.innerHTML =
       '<div class="hero"><div class="wrap">' +
-        '<h1>' + esc(s.shopName) + '</h1><p class="tag">' + esc(s.tagline) + '</p>' +
+        '<h1>' + esc(s.shopName) + '</h1><p class="tag">' + esc(tl && s.taglineTl ? s.taglineTl : s.tagline) + '</p>' +
         heroArt() +
-        '<a class="btn big" href="#/book" id="bookBtn">🛵 Book a Scooter</a>' +
-        '<div class="chips"><span class="chip">🕘 ' + BAY.fmtTime(s.openTime) + ' – ' + BAY.fmtTime(s.closeTime) + ' daily</span>' +
-        '<span class="chip">⛑️ Helmet included</span><span class="chip">💵 Cash or GCash</span></div>' +
+        '<a class="btn big" href="#/book" id="bookBtn">🛵 ' + te('Book a Scooter') + '</a>' +
+        '<div class="chips"><span class="chip">🕘 ' + te('{open} – {close} daily', hours(s)) + '</span>' +
+        '<span class="chip">⛑️ ' + te('Helmet included') + '</span><span class="chip">💵 ' + te('Cash or GCash') + '</span></div>' +
       '</div></div>' +
-      '<section><div class="wrap"><p>' + esc(s.intro) + '</p></div></section>' +
-      '<section><div class="wrap"><h2>Our scooters</h2><div class="fleet-mini">' + fleet + '</div>' +
-        '<p class="small muted" style="margin-top:8px">Refundable deposit ' + peso(s.deposit) + '. Multi-day discounts for ' + s.multiDayMinDays + '+ days.</p></div></section>' +
-      (gallery ? '<section><div class="wrap"><h2>Photos</h2><div class="gallery">' + gallery + '</div></div></section>' : '') +
-      '<section><div class="wrap"><h2>Find us</h2><div class="card"><ul class="info-list">' +
+      '<section><div class="wrap"><p>' + esc(tl && s.introTl ? s.introTl : s.intro) + '</p></div></section>' +
+      '<section><div class="wrap"><h2>' + te('Our scooters') + '</h2><div class="fleet-mini">' + fleet + '</div>' +
+        '<p class="small muted" style="margin-top:8px">' + te('Refundable deposit {deposit}. Multi-day discounts for {days}+ days.', { deposit: peso(s.deposit), days: s.multiDayMinDays }) + '</p></div></section>' +
+      (gallery ? '<section><div class="wrap"><h2>' + te('Photos') + '</h2><div class="gallery">' + gallery + '</div></div></section>' : '') +
+      '<section><div class="wrap"><h2>' + te('Find us') + '</h2><div class="card"><ul class="info-list">' +
         '<li><span class="ico">📍</span><div><b>' + esc(s.address) + '</b><div class="small muted">' + esc(s.landmark) + '</div></div></li>' +
-        '<li><span class="ico">🕘</span><div>Pickup &amp; return<div class="small muted">' + BAY.fmtTime(s.openTime) + ' – ' + BAY.fmtTime(s.closeTime) + ', every day</div></div></li>' +
-        '<li><span class="ico">⛴️</span><div>Coming by ferry or RoRo?<div class="small muted">Add port delivery and we\'ll meet you there.</div></div></li>' +
+        '<li><span class="ico">🕘</span><div>' + te('Pickup & return') + '<div class="small muted">' + te('{open} – {close}, every day', hours(s)) + '</div></div></li>' +
+        '<li><span class="ico">⛴️</span><div>' + te('Coming by ferry or RoRo?') + '<div class="small muted">' + te('Add port delivery and we\'ll meet you there.') + '</div></div></li>' +
         (s.phone ? '<li><span class="ico">📞</span><div><a href="tel:' + esc(s.phone.replace(/\s/g, '')) + '">' + esc(s.phone) + '</a></div></li>' : '') +
-      '</ul><div class="row" style="margin-top:10px"><a class="btn alt" target="_blank" rel="noopener" href="' + esc(s.mapsUrl) + '">🗺️ Directions</a>' +
+      '</ul><div class="row" style="margin-top:10px"><a class="btn alt" target="_blank" rel="noopener" href="' + esc(s.mapsUrl) + '">🗺️ ' + te('Directions') + '</a>' +
       '<a class="btn messenger" target="_blank" rel="noopener" href="' + esc(s.messengerUrl) + '">💬 Messenger</a></div></div>' +
-      '<a class="btn big" href="#/book">Book a Scooter</a></div></section>' +
+      '<a class="btn big" href="#/book">' + te('Book a Scooter') + '</a></div></section>' +
       footer();
   }
   function heroArt() {
@@ -1100,29 +1447,30 @@ function RUN_CUSTOMER() {
   function footer() {
     var s = CFG.settings;
     return '<footer class="site"><div class="wrap"><b>' + esc(s.shopName) + '</b><br>' + esc(s.address) + '<br>' +
-      '<a href="#/lookup">Find my booking</a> · <a href="#" data-terms>Rental terms</a><br><span class="small">Salamat po sa pagbisita! 🌴</span></div></footer>';
+      '<a href="#/lookup">' + te('Find my booking') + '</a> · <a href="#" data-terms>' + te('Rental terms') + '</a><br><span class="small">' + te('Salamat po sa pagbisita!') + ' 🌴</span></div></footer>';
   }
   app.addEventListener('click', function (e) {
     if (e.target.closest('[data-terms]')) { e.preventDefault(); showTerms(); }
   });
   function showTerms() {
     var s = CFG.settings;
-    UI.modal('Rental terms', '<ol class="terms">' + s.terms.map(function (t) { return '<li>' + esc(BAY.fillTerms(t, s)) + '</li>'; }).join('') +
-      '</ol><button class="btn" data-close>Got it</button>');
+    var terms = I18N.lang === 'tl' && s.termsTl && s.termsTl.length ? s.termsTl : s.terms;
+    UI.modal(t('Rental terms'), '<ol class="terms">' + terms.map(function (x) { return '<li>' + esc(BAY.fillTerms(x, s)) + '</li>'; }).join('') +
+      '</ol><button class="btn" data-close>' + te('Got it') + '</button>');
   }
 
   // ---------- booking steps ----------
   function stepHeader() {
     return '<div class="steps">' + STEPS.map(function (_, i) { return '<i class="' + (i <= S.step ? 'on' : '') + '"></i>'; }).join('') + '</div>' +
-      '<div class="step-title">Step ' + (S.step + 1) + ' of ' + STEPS.length + ' · ' + STEPS[S.step] + '</div>';
+      '<div class="step-title">' + te('Step {n} of {total}', { n: S.step + 1, total: STEPS.length }) + ' · ' + te(STEPS[S.step]) + '</div>';
   }
   function bar(label, opts) {
     opts = opts || {};
     var q = currentQuote();
     return '<div class="bottombar"><div class="wrap">' +
-      (S.step > 0 ? '<button class="btn alt back" data-back aria-label="Back">←</button>' : '') +
-      '<div class="sum">' + (q ? '<span class="small muted">Total</span><b id="barTotal">' + peso(q.total) + '</b>' : '<span class="small muted">' + esc(opts.hint || '') + '</span>') + '</div>' +
-      '<button class="btn" data-next ' + (opts.disabled ? 'disabled' : '') + '>' + esc(label) + '</button></div></div>';
+      (S.step > 0 ? '<button class="btn alt back" data-back aria-label="' + te('Back') + '">←</button>' : '') +
+      '<div class="sum">' + (q ? '<span class="small muted">' + te('Total') + '</span><b id="barTotal">' + peso(q.total) + '</b>' : '<span class="small muted">' + esc(opts.hint ? t(opts.hint) : '') + '</span>') + '</div>' +
+      '<button class="btn" data-next ' + (opts.disabled ? 'disabled' : '') + '>' + te(label) + '</button></div></div>';
   }
   function go(step) { S.step = step; saveState(); renderStep(); window.scrollTo(0, 0); }
 
@@ -1138,28 +1486,29 @@ function RUN_CUSTOMER() {
   function defaultDates() {
     var s = CFG.settings, slots = BAY.timeSlots(s);
     var earliest = BAY.fromEpoch(Date.now() + (s.leadMinutes || 0) * 60e3);
-    var d = BAY.today(), t = slots.filter(function (x) { return d + 'T' + x >= earliest; })[0];
-    if (!t || !BAY.withinHours(d + 'T' + t, s.openTime, s.closeTime)) { d = BAY.addDays(d, 1); t = slots[0]; }
-    if (BAY.minutesOf(t) < BAY.minutesOf('09:00') && slots.indexOf('09:00') >= 0) t = '09:00';
-    S.pickupDate = d; S.pickupTime = t; S.returnDate = BAY.addDays(d, 1); S.returnTime = t;
+    var d = BAY.today(), tm = slots.filter(function (x) { return d + 'T' + x >= earliest; })[0];
+    if (!tm || !BAY.withinHours(d + 'T' + tm, s.openTime, s.closeTime)) { d = BAY.addDays(d, 1); tm = slots[0]; }
+    if (BAY.minutesOf(tm) < BAY.minutesOf('09:00') && slots.indexOf('09:00') >= 0) tm = '09:00';
+    S.pickupDate = d; S.pickupTime = tm; S.returnDate = BAY.addDays(d, 1); S.returnTime = tm;
   }
   function stepWhen() {
     var s = CFG.settings;
     if (!S.pickupDate) defaultDates();
     var slots = BAY.timeSlots(s);
-    var opt = function (sel) { return slots.map(function (t) { return '<option value="' + t + '"' + (t === sel ? ' selected' : '') + '>' + BAY.fmtTime(t) + '</option>'; }).join(''); };
+    var opt = function (sel) { return slots.map(function (x) { return '<option value="' + x + '"' + (x === sel ? ' selected' : '') + '>' + BAY.fmtTime(x) + '</option>'; }).join(''); };
     var today = BAY.today();
     app.innerHTML = '<div class="wrap">' + stepHeader() +
-      '<h2>When do you need it?</h2>' +
-      '<p class="small muted">Pickup &amp; return at our shop, ' + BAY.fmtTime(s.openTime) + ' – ' + BAY.fmtTime(s.closeTime) + ' (Philippine time).</p>' +
-      '<div class="card"><h3>🛵 Pickup</h3><div class="row">' +
-        '<input type="date" id="pDate" min="' + today + '" value="' + S.pickupDate + '" aria-label="Pickup date">' +
-        '<select id="pTime" aria-label="Pickup time">' + opt(S.pickupTime) + '</select></div></div>' +
-      '<label class="f">How long?</label><div class="quick" id="quick">' +
-        '<button data-h="half">Half day</button><button data-d="1">1 day</button><button data-d="2">2 days</button><button data-d="3">3 days</button><button data-d="7">1 week</button></div>' +
-      '<div class="card" style="margin-top:12px"><h3>🏁 Return</h3><div class="row">' +
-        '<input type="date" id="rDate" min="' + today + '" value="' + S.returnDate + '" aria-label="Return date">' +
-        '<select id="rTime" aria-label="Return time">' + opt(S.returnTime) + '</select></div></div>' +
+      '<h2>' + te('When do you need it?') + '</h2>' +
+      '<p class="small muted">' + te('Pickup & return at our shop, {open} – {close} (Philippine time).', hours(s)) + '</p>' +
+      '<div class="card"><h3>🛵 ' + te('Pickup') + '</h3><div class="row">' +
+        '<input type="date" id="pDate" min="' + today + '" value="' + S.pickupDate + '" aria-label="' + te('Pickup date') + '">' +
+        '<select id="pTime" aria-label="' + te('Pickup time') + '">' + opt(S.pickupTime) + '</select></div></div>' +
+      '<label class="f">' + te('How long?') + '</label><div class="quick" id="quick">' +
+        '<button data-h="half">' + te('Half day') + '</button><button data-d="1">' + te('1 day') + '</button><button data-d="2">' + te('2 days') + '</button>' +
+        '<button data-d="3">' + te('3 days') + '</button><button data-d="7">' + te('1 week') + '</button></div>' +
+      '<div class="card" style="margin-top:12px"><h3>🏁 ' + te('Return') + '</h3><div class="row">' +
+        '<input type="date" id="rDate" min="' + today + '" value="' + S.returnDate + '" aria-label="' + te('Return date') + '">' +
+        '<select id="rTime" aria-label="' + te('Return time') + '">' + opt(S.returnTime) + '</select></div></div>' +
       '<div id="whenMsg"></div></div>' + bar('See scooters', { hint: '' });
     function sync() {
       S.pickupDate = $('#pDate').value; S.pickupTime = $('#pTime').value;
@@ -1167,8 +1516,8 @@ function RUN_CUSTOMER() {
       models = null; saveState();
       var err = BAY.validateWindow(pickup(), ret(), s);
       var hrs = err ? 0 : (BAY.toEpoch(ret()) - BAY.toEpoch(pickup())) / 36e5;
-      $('#whenMsg').innerHTML = err ? '<div class="err-box">' + esc(err) + '</div>' :
-        '<p class="center muted" style="margin-top:12px">Rental length: <b>' + BAY.durationText(hrs) + '</b></p>';
+      $('#whenMsg').innerHTML = err ? errBox(err) :
+        '<p class="center muted" style="margin-top:12px">' + te('Rental length:') + ' <b>' + esc(tx(BAY.durationText(hrs))) + '</b></p>';
       $('[data-next]').disabled = !!err;
       $$('#quick button').forEach(function (b) { b.classList.remove('on'); });
     }
@@ -1186,14 +1535,14 @@ function RUN_CUSTOMER() {
       $('#rTime').value = rt; sync(); b.classList.add('on');
     });
     sync();
-    $('[data-next]').onclick = function () { loadModels().then(function () { go(1); }, function (e) { $('#whenMsg').innerHTML = '<div class="err-box">' + esc(e.message) + '</div>'; }); };
+    $('[data-next]').onclick = function () { loadModels().then(function () { go(1); }, function (e) { $('#whenMsg').innerHTML = errBox(e.message); }); };
   }
 
   function loadModels() {
-    var btn = $('[data-next]'); if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+    var btn = $('[data-next]'); if (btn) { btn.disabled = true; btn.textContent = t('Checking…'); }
     return UI.api('GET', '/api/availability?pickup=' + encodeURIComponent(pickup()) + '&return=' + encodeURIComponent(ret()))
       .then(function (r) { models = r.models; return models; })
-      .finally(function () { if (btn && document.body.contains(btn)) { btn.disabled = false; btn.textContent = 'See scooters'; } });
+      .finally(function () { if (btn && document.body.contains(btn)) { btn.disabled = false; btn.textContent = t('See scooters'); } });
   }
 
   // Step 2 — choose scooter
@@ -1202,18 +1551,19 @@ function RUN_CUSTOMER() {
     if (S.model && !chosen()) S.model = '';
     var any = models.some(function (m) { return m.available > 0; });
     app.innerHTML = '<div class="wrap">' + stepHeader() +
-      '<h2>Choose your scooter</h2><p class="small muted">' + BAY.fmtLocal(pickup()) + ' → ' + BAY.fmtLocal(ret()) + '</p>' +
-      (any ? '' : '<div class="err-box">All scooters are booked for these dates. Try different dates or message us on Messenger.</div>') +
+      '<h2>' + te('Choose your scooter') + '</h2><p class="small muted">' + BAY.fmtLocal(pickup()) + ' → ' + BAY.fmtLocal(ret()) + '</p>' +
+      (any ? '' : errBox('All scooters are booked for these dates. Try different dates or message us on Messenger.')) +
       models.map(function (m) {
         var avail = m.available > 0;
         return '<button class="pick' + (S.model === m.model ? ' on' : '') + '" data-model="' + esc(m.model) + '"' + (avail ? '' : ' disabled') + '>' +
           '<div class="thumb"><img alt="" loading="lazy" src="' + UI.unitPhoto(m.unit) + '"></div><div class="body">' +
           '<div class="title">' + esc(m.model) + '</div><div class="small muted">' + esc(m.unit.description || '') + '</div>' +
           '<div class="row" style="margin-top:4px"><span class="price">' + peso(m.quote.rental) + '</span>' +
-          (avail ? '<span class="badge ok" style="flex:none">' + (m.available === 1 ? '1 left' : m.available + ' available') + '</span>' : '<span class="badge no" style="flex:none">Booked</span>') +
-          '</div><div class="small muted">' + esc(m.quote.rentalLabel) + '</div></div></button>';
+          (avail ? '<span class="badge ok" style="flex:none">' + (m.available === 1 ? te('1 left') : te('{n} available', { n: m.available })) + '</span>'
+            : '<span class="badge no" style="flex:none">' + te('Booked') + '</span>') +
+          '</div><div class="small muted">' + esc(tx(m.quote.rentalLabel)) + '</div></div></button>';
       }).join('') +
-      '<button class="btn ghost" data-back2>Change dates</button></div>' + bar('Continue', { disabled: !chosen(), hint: 'Tap a scooter' });
+      '<button class="btn ghost" data-back2>' + te('Change dates') + '</button></div>' + bar('Continue', { disabled: !chosen(), hint: 'Tap a scooter' });
     $$('.pick').forEach(function (b) {
       b.onclick = function () { S.model = b.dataset.model; saveState(); stepScooter(); };
     });
@@ -1223,25 +1573,25 @@ function RUN_CUSTOMER() {
 
   // Step 3 — add-ons + breakdown
   function breakdownHTML(q) {
-    return '<table class="breakdown"><tr><td>' + esc(S.model) + '<div class="small muted">' + esc(q.rentalLabel) + '</div></td><td>' + peso(q.rental) + '</td></tr>' +
-      q.addons.map(function (a) { return '<tr><td>' + esc(a.name) + (a.qty > 1 ? ' × ' + a.qty : '') + '</td><td>' + peso(a.amount) + '</td></tr>'; }).join('') +
-      '<tr class="total"><td>Rental total</td><td>' + peso(q.total) + '</td></tr>' +
-      '<tr class="dep"><td>Refundable deposit<div class="small">paid in cash at pickup, returned after</div></td><td>' + peso(q.deposit) + '</td></tr>' +
-      '<tr class="due"><td>Bring at pickup' + (S.payMethod === 'gcash' ? ' (deposit only)' : '') + '</td><td>' + peso(S.payMethod === 'gcash' ? q.deposit : q.dueAtPickup) + '</td></tr></table>';
+    return '<table class="breakdown"><tr><td>' + esc(S.model) + '<div class="small muted">' + esc(tx(q.rentalLabel)) + '</div></td><td>' + peso(q.rental) + '</td></tr>' +
+      q.addons.map(function (a) { return '<tr><td>' + te(a.name) + (a.qty > 1 ? ' × ' + a.qty : '') + '</td><td>' + peso(a.amount) + '</td></tr>'; }).join('') +
+      '<tr class="total"><td>' + te('Rental total') + '</td><td>' + peso(q.total) + '</td></tr>' +
+      '<tr class="dep"><td>' + te('Refundable deposit') + '<div class="small">' + te('paid in cash at pickup, returned after') + '</div></td><td>' + peso(q.deposit) + '</td></tr>' +
+      '<tr class="due"><td>' + te('Bring at pickup') + (S.payMethod === 'gcash' ? ' ' + te('(deposit only)') : '') + '</td><td>' + peso(S.payMethod === 'gcash' ? q.deposit : q.dueAtPickup) + '</td></tr></table>';
   }
   function stepExtras() {
     var s = CFG.settings;
     var active = s.addons.filter(function (a) { return a.active; });
-    app.innerHTML = '<div class="wrap">' + stepHeader() + '<h2>Add extras</h2>' +
+    app.innerHTML = '<div class="wrap">' + stepHeader() + '<h2>' + te('Add extras') + '</h2>' +
       (active.length ? '<div class="card">' + active.map(function (a) {
         var qty = S.addons[a.id] || 0;
         var ctrl = (a.maxQty || 1) > 1
-          ? '<div class="qty"><button data-minus="' + a.id + '" aria-label="Less">−</button><span>' + qty + '</span><button data-plus="' + a.id + '" aria-label="More">+</button></div>'
-          : '<button class="toggle' + (qty ? ' on' : '') + '" data-toggle="' + a.id + '" role="switch" aria-checked="' + !!qty + '" aria-label="' + esc(a.name) + '"></button>';
-        return '<div class="addon"><div class="name">' + esc(a.name) + '<div class="small muted">' + peso(a.price) + (a.perDay ? ' / day' : '') + '</div></div>' + ctrl + '</div>';
+          ? '<div class="qty"><button data-minus="' + a.id + '" aria-label="' + te('Less') + '">−</button><span>' + qty + '</span><button data-plus="' + a.id + '" aria-label="' + te('More') + '">+</button></div>'
+          : '<button class="toggle' + (qty ? ' on' : '') + '" data-toggle="' + a.id + '" role="switch" aria-checked="' + !!qty + '" aria-label="' + te(a.name) + '"></button>';
+        return '<div class="addon"><div class="name">' + te(a.name) + '<div class="small muted">' + peso(a.price) + (a.perDay ? ' ' + te('/ day') : '') + '</div></div>' + ctrl + '</div>';
       }).join('') + '</div>' : '') +
-      '<h3 style="margin-top:18px">Price breakdown</h3><div class="card sand" id="bd"></div>' +
-      '<p class="small muted">⛑️ One helmet is included. Riding with a passenger? Add an extra helmet.</p></div>' + bar('Continue');
+      '<h3 style="margin-top:18px">' + te('Price breakdown') + '</h3><div class="card sand" id="bd"></div>' +
+      '<p class="small muted">⛑️ ' + te('One helmet is included. Riding with a passenger? Add an extra helmet.') + '</p></div>' + bar('Continue');
     function refresh() {
       var q = currentQuote();
       $('#bd').innerHTML = breakdownHTML(q);
@@ -1264,22 +1614,26 @@ function RUN_CUSTOMER() {
   }
 
   // Step 4 — details, license, terms
+  var STAY_CHIPS = ['Arriving by ferry', 'Arriving by RoRo', 'San Agustin town', 'Local resident'];
   function stepDetails() {
     var c = S.customer, s = CFG.settings;
     var riders = []; for (var i = 1; i <= (s.maxRiders || 2); i++) riders.push(i);
-    app.innerHTML = '<div class="wrap">' + stepHeader() + '<h2>Your details</h2>' +
-      '<label class="f" for="name">Full name</label><input id="name" autocomplete="name" value="' + esc(c.name) + '" placeholder="Juan Dela Cruz">' +
-      '<label class="f" for="mobile">Mobile number</label><input id="mobile" type="tel" inputmode="tel" autocomplete="tel" value="' + esc(c.mobile) + '" placeholder="0917 123 4567">' +
-      '<div class="hint">Foreign number? Start with + and country code.</div>' +
-      '<label class="f" for="fb">Facebook / Messenger name</label><input id="fb" value="' + esc(c.fb) + '" placeholder="So we can message you">' +
-      '<label class="f" for="stay">Where are you staying?</label><input id="stay" value="' + esc(c.stayingAt) + '" placeholder="Resort, homestay or barangay">' +
-      '<div class="quick" style="margin-top:8px" id="stayQuick"><button>Arriving by ferry</button><button>Arriving by RoRo</button><button>San Agustin town</button><button>Local resident</button></div>' +
-      '<label class="f" for="email">Email <span class="opt">(optional)</span></label><input id="email" type="email" inputmode="email" autocomplete="email" value="' + esc(c.email) + '">' +
-      '<label class="f">Number of riders</label><div class="seg" id="riders">' + riders.map(function (r) { return '<button data-r="' + r + '" class="' + (c.riders === r ? 'on' : '') + '">' + r + (r === 1 ? ' rider' : ' riders') + '</button>'; }).join('') + '</div>' +
-      '<label class="f">Driver\'s license photo</label>' +
+    var termsLink = '<a href="#" data-terms>' + te('rental terms') + '</a>';
+    app.innerHTML = '<div class="wrap">' + stepHeader() + '<h2>' + te('Your details') + '</h2>' +
+      '<label class="f" for="name">' + te('Full name') + '</label><input id="name" autocomplete="name" value="' + esc(c.name) + '" placeholder="Juan Dela Cruz">' +
+      '<label class="f" for="mobile">' + te('Mobile number') + '</label><input id="mobile" type="tel" inputmode="tel" autocomplete="tel" value="' + esc(c.mobile) + '" placeholder="0917 123 4567">' +
+      '<div class="hint">' + te('Foreign number? Start with + and country code.') + '</div>' +
+      '<label class="f" for="fb">' + te('Facebook / Messenger name') + '</label><input id="fb" value="' + esc(c.fb) + '" placeholder="' + te('So we can message you') + '">' +
+      '<label class="f" for="stay">' + te('Where are you staying?') + '</label><input id="stay" value="' + esc(c.stayingAt) + '" placeholder="' + te('Resort, homestay or barangay') + '">' +
+      '<div class="quick" style="margin-top:8px" id="stayQuick">' + STAY_CHIPS.map(function (x) { return '<button>' + te(x) + '</button>'; }).join('') + '</div>' +
+      '<label class="f" for="email">' + te('Email') + ' <span class="opt">' + te('(optional)') + '</span></label><input id="email" type="email" inputmode="email" autocomplete="email" value="' + esc(c.email) + '">' +
+      '<label class="f">' + te('Number of riders') + '</label><div class="seg" id="riders">' + riders.map(function (r) {
+        return '<button data-r="' + r + '" class="' + (c.riders === r ? 'on' : '') + '">' + (r === 1 ? te('1 rider') : te('{n} riders', { n: r })) + '</button>'; }).join('') + '</div>' +
+      '<label class="f">' + te('Driver\'s license photo') + '</label>' +
       '<label class="upload" id="licBox"><input type="file" accept="image/*" id="lic">' + uploadInner(files.license, 'Tap to take or upload a photo of your license') + '</label>' +
-      '<div class="hint">Clear photo of the front side. Bring the original at pickup.</div>' +
-      '<label class="check"><input type="checkbox" id="agree"' + (S.agree ? ' checked' : '') + '><span>I agree to the <a href="#" data-terms>rental terms</a> (license, helmet, damage, fuel, late fees, cancellation).</span></label>' +
+      '<div class="hint">' + te('Clear photo of the front side. Bring the original at pickup.') + '</div>' +
+      '<label class="check"><input type="checkbox" id="agree"' + (S.agree ? ' checked' : '') + '><span>' +
+        esc(t('I agree to the {terms} (license, helmet, damage, fuel, late fees, cancellation).')).replace('{terms}', termsLink) + '</span></label>' +
       '<div id="detMsg"></div></div>' + bar('Continue to payment');
     function read() {
       c.name = $('#name').value.trim(); c.mobile = $('#mobile').value.trim(); c.fb = $('#fb').value.trim();
@@ -1290,7 +1644,7 @@ function RUN_CUSTOMER() {
     $('#riders').onclick = function (e) {
       var b = e.target.closest('button'); if (!b) return;
       c.riders = +b.dataset.r; saveState(); $$('#riders button').forEach(function (x) { x.classList.toggle('on', x === b); });
-      if (c.riders > 1 && !S.addons.helmet) UI.toast('Tip: add an extra helmet for your passenger');
+      if (c.riders > 1 && !S.addons.helmet) UI.toast(t('Tip: add an extra helmet for your passenger'));
     };
     wireUpload('#lic', '#licBox', 'license', 'Tap to take or upload a photo of your license');
     wireBar(function () {
@@ -1300,23 +1654,23 @@ function RUN_CUSTOMER() {
         : c.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.email) ? 'Please check your email address.'
         : !files.license ? 'Please add a photo of your driver\'s license.'
         : !S.agree ? 'Please agree to the rental terms.' : null;
-      if (err) { $('#detMsg').innerHTML = '<div class="err-box">' + esc(err) + '</div>'; $('#detMsg').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+      if (err) { $('#detMsg').innerHTML = errBox(err); $('#detMsg').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
       go(4);
     });
   }
   function uploadInner(dataUrl, text) {
-    return dataUrl ? '<img src="' + dataUrl + '" alt="Preview"><span class="small">✅ Photo added · tap to change</span>'
-      : '<div class="big-ico">📷</div><div><b>' + esc(text) + '</b></div>';
+    return dataUrl ? '<img src="' + dataUrl + '" alt="' + te('Preview') + '"><span class="small">✅ ' + te('Photo added · tap to change') + '</span>'
+      : '<div class="big-ico">📷</div><div><b>' + te(text) + '</b></div>';
   }
   function wireUpload(inputSel, boxSel, key, text) {
     $(inputSel).addEventListener('change', function (e) {
       var f = e.target.files[0]; if (!f) return;
       var box = $(boxSel), input = $(inputSel);
-      var label = box.querySelector('b, span.small'); if (label) label.textContent = 'Compressing photo…';
+      var label = box.querySelector('b, span.small'); if (label) label.textContent = t('Compressing photo…');
       UI.compressImage(f, 1400, 0.72).then(function (d) {
         files[key] = d;
         box.innerHTML = ''; box.appendChild(input); box.insertAdjacentHTML('beforeend', uploadInner(d, text));
-      }, function (err) { UI.toast(err.message); });
+      }, function (err) { UI.toast(tx(err.message)); });
     });
   }
 
@@ -1324,16 +1678,17 @@ function RUN_CUSTOMER() {
   function stepPayment() {
     var s = CFG.settings, q = currentQuote();
     var gc = S.payMethod === 'gcash';
-    app.innerHTML = '<div class="wrap">' + stepHeader() + '<h2>Payment</h2>' +
-      '<div class="seg" id="pay"><button data-m="cash" class="' + (!gc ? 'on' : '') + '">💵 Pay at pickup (cash)</button><button data-m="gcash" class="' + (gc ? 'on' : '') + '">📱 Pay via GCash</button></div>' +
-      (gc ? '<div class="gcash" style="margin-top:12px"><div class="small">Send <b>' + peso(q.total) + '</b> to:</div>' +
+    app.innerHTML = '<div class="wrap">' + stepHeader() + '<h2>' + te('Payment') + '</h2>' +
+      '<div class="seg" id="pay"><button data-m="cash" class="' + (!gc ? 'on' : '') + '">💵 ' + te('Pay at pickup (cash)') + '</button>' +
+        '<button data-m="gcash" class="' + (gc ? 'on' : '') + '">📱 ' + te('Pay via GCash') + '</button></div>' +
+      (gc ? '<div class="gcash" style="margin-top:12px"><div class="small">' + esc(t('Send {amount} to:')).replace('{amount}', '<b>' + peso(q.total) + '</b>') + '</div>' +
         '<div class="num">' + esc(s.gcashNumber) + '</div><div class="small">' + esc(s.gcashName) + '</div>' +
-        '<button class="btn sm alt" id="copyNum" style="margin-top:8px">Copy number</button>' +
-        (s.gcashQr ? '<img src="' + UI.mediaUrl(s.gcashQr) + '" alt="GCash QR code">' : '') +
-        '<label class="f" for="gref">GCash reference number</label><input id="gref" inputmode="numeric" value="' + esc(S.gcashRef) + '" placeholder="e.g. 1009 123 456789">' +
-        '<label class="f">Payment screenshot</label><label class="upload" id="proofBox"><input type="file" accept="image/*" id="proof">' + uploadInner(files.proof, 'Upload GCash screenshot') + '</label>' +
-        '</div>' : '<p class="small muted" style="margin-top:10px">Pay the rental and deposit in cash when you pick up your scooter.</p>') +
-      '<h3 style="margin-top:18px">Summary</h3><div class="card sand">' +
+        '<button class="btn sm alt" id="copyNum" style="margin-top:8px">' + te('Copy number') + '</button>' +
+        (s.gcashQr ? '<img src="' + UI.mediaUrl(s.gcashQr) + '" alt="' + te('GCash QR code') + '">' : '') +
+        '<label class="f" for="gref">' + te('GCash reference number') + '</label><input id="gref" inputmode="numeric" value="' + esc(S.gcashRef) + '" placeholder="' + te('e.g. 1009 123 456789') + '">' +
+        '<label class="f">' + te('Payment screenshot') + '</label><label class="upload" id="proofBox"><input type="file" accept="image/*" id="proof">' + uploadInner(files.proof, 'Upload GCash screenshot') + '</label>' +
+        '</div>' : '<p class="small muted" style="margin-top:10px">' + te('Pay the rental and deposit in cash when you pick up your scooter.') + '</p>') +
+      '<h3 style="margin-top:18px">' + te('Summary') + '</h3><div class="card sand">' +
         '<p><b>' + BAY.fmtLocal(pickup()) + '</b> → <b>' + BAY.fmtLocal(ret()) + '</b></p>' + breakdownHTML(q) + '</div>' +
       '<div id="payMsg"></div></div>' + bar('Confirm booking');
     $('#pay').onclick = function (e) { var b = e.target.closest('button'); if (b) { S.payMethod = b.dataset.m; saveState(); stepPayment(); } };
@@ -1349,14 +1704,14 @@ function RUN_CUSTOMER() {
     var btn = $('[data-next]');
     var msgBox = $('#payMsg');
     if (S.payMethod === 'gcash') {
-      if ((S.gcashRef || '').replace(/\D/g, '').length < 6) { msgBox.innerHTML = '<div class="err-box">Please enter your GCash reference number.</div>'; return; }
-      if (!files.proof) { msgBox.innerHTML = '<div class="err-box">Please upload your GCash payment screenshot.</div>'; return; }
+      if ((S.gcashRef || '').replace(/\D/g, '').length < 6) { msgBox.innerHTML = errBox('Please enter your GCash reference number.'); return; }
+      if (!files.proof) { msgBox.innerHTML = errBox('Please upload your GCash payment screenshot.'); return; }
     }
-    if (!files.license) { UI.toast('Please add your license photo again'); return go(3); }
-    btn.disabled = true; btn.textContent = 'Sending…';
+    if (!files.license) { UI.toast(t('Please add your license photo again')); return go(3); }
+    btn.disabled = true; btn.textContent = t('Sending…');
     var c = S.customer;
     UI.api('POST', '/api/bookings', {
-      pickup: pickup(), return: ret(), model: S.model, addons: S.addons,
+      pickup: pickup(), return: ret(), model: S.model, addons: S.addons, lang: I18N.lang,
       customer: { name: c.name, mobile: c.mobile.replace(/[\s-]/g, ''), email: c.email, fb: c.fb, stayingAt: c.stayingAt, riders: c.riders },
       license: files.license, agreeTerms: S.agree,
       payment: { method: S.payMethod, gcashRef: S.gcashRef, proof: S.payMethod === 'gcash' ? files.proof : null }
@@ -1366,8 +1721,8 @@ function RUN_CUSTOMER() {
       S = blankState(); S.customer = keep; files = { license: null, proof: null }; models = null; saveState();
       location.hash = '#/done';
     }).catch(function (e) {
-      btn.disabled = false; btn.textContent = 'Confirm booking';
-      msgBox.innerHTML = '<div class="err-box">' + esc(e.message) + '</div>';
+      btn.disabled = false; btn.textContent = t('Confirm booking');
+      msgBox.innerHTML = errBox(e.message);
       if (e.status === 409) { models = null; setTimeout(function () { go(1); }, 1800); }
     });
   }
@@ -1383,45 +1738,45 @@ function RUN_CUSTOMER() {
     var q = b.quote;
     return '<div class="card sand" style="text-align:left"><p><b>' + esc(b.model) + '</b></p>' +
       '<p>🛵 ' + BAY.fmtLocal(b.pickup) + '<br>🏁 ' + BAY.fmtLocal(b.return) + '</p>' +
-      '<table class="breakdown"><tr><td>' + esc(q.rentalLabel) + '</td><td>' + peso(q.rental) + '</td></tr>' +
-      q.addons.map(function (a) { return '<tr><td>' + esc(a.name) + (a.qty > 1 ? ' × ' + a.qty : '') + '</td><td>' + peso(a.amount) + '</td></tr>'; }).join('') +
-      '<tr class="total"><td>Rental total</td><td>' + peso(q.total) + '</td></tr>' +
-      '<tr class="dep"><td>Refundable deposit (at pickup)</td><td>' + peso(q.deposit) + '</td></tr></table>' +
-      '<p class="small muted" style="margin-top:8px">Payment: ' + (b.payment.method === 'gcash' ? 'GCash (we\'ll verify your reference)' : 'Cash at pickup') +
-      ' · Status: <b>' + esc(BAY.STATUS_LABELS[b.status]) + '</b></p></div>';
+      '<table class="breakdown"><tr><td>' + esc(tx(q.rentalLabel)) + '</td><td>' + peso(q.rental) + '</td></tr>' +
+      q.addons.map(function (a) { return '<tr><td>' + te(a.name) + (a.qty > 1 ? ' × ' + a.qty : '') + '</td><td>' + peso(a.amount) + '</td></tr>'; }).join('') +
+      '<tr class="total"><td>' + te('Rental total') + '</td><td>' + peso(q.total) + '</td></tr>' +
+      '<tr class="dep"><td>' + te('Refundable deposit (at pickup)') + '</td><td>' + peso(q.deposit) + '</td></tr></table>' +
+      '<p class="small muted" style="margin-top:8px">' + te('Payment:') + ' ' + (b.payment.method === 'gcash' ? te('GCash (we\'ll verify your reference)') : te('Cash at pickup')) +
+      ' · ' + te('Status:') + ' <b>' + te(BAY.STATUS_LABELS[b.status]) + '</b></p></div>';
   }
   function messengerLink(b) {
     var url = CFG.settings.messengerUrl || '';
-    var text = 'Hi! I just booked ' + b.ref + ' (' + b.model + ', ' + BAY.fmtLocal(b.pickup) + ').';
+    var text = t('Hi! I just booked {ref} ({model}, {when}).', { ref: b.ref, model: b.model, when: BAY.fmtLocal(b.pickup) });
     return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'text=' + encodeURIComponent(text);
   }
   function renderDone() {
     var b; try { b = JSON.parse(localStorage.getItem('bay_last')); } catch (e) {}
     if (!b) { location.hash = '#/'; return; }
     var s = CFG.settings;
-    app.innerHTML = '<div class="wrap center"><div class="done-ico">✓</div><h2>Salamat, ' + esc((b.customer.name || '').split(' ')[0]) + '!</h2>' +
-      '<p>Your booking request is in. Your reference code:</p><div class="ref">' + esc(b.ref) + '</div>' +
-      '<p class="small muted">We\'ll confirm on Messenger or SMS shortly. Screenshot this page for easy reference.</p>' +
+    app.innerHTML = '<div class="wrap center"><div class="done-ico">✓</div><h2>' + te('Salamat, {name}!', { name: (b.customer.name || '').split(' ')[0] }) + '</h2>' +
+      '<p>' + te('Your booking request is in. Your reference code:') + '</p><div class="ref">' + esc(b.ref) + '</div>' +
+      '<p class="small muted">' + te('We\'ll confirm on Messenger or SMS shortly. Screenshot this page for easy reference.') + '</p>' +
       bookingSummary(b) +
-      '<a class="btn messenger big" target="_blank" rel="noopener" href="' + esc(messengerLink(b)) + '">💬 Message us on Messenger</a>' +
-      '<div class="spacer"></div><div class="card" style="text-align:left"><b>📍 Pickup point</b><p class="small">' + esc(s.address) + '<br>' + esc(s.landmark) + '</p>' +
-      '<a class="btn alt" target="_blank" rel="noopener" href="' + esc(s.mapsUrl) + '">🗺️ Get directions</a></div>' +
-      '<p class="small">Don\'t forget your original driver\'s license and ' + peso(b.quote.deposit) + ' cash deposit. Ingat sa biyahe! 🌴</p>' +
-      '<a class="btn ghost" href="#/">Back to home</a></div>' + footer();
+      '<a class="btn messenger big" target="_blank" rel="noopener" href="' + esc(messengerLink(b)) + '">💬 ' + te('Message us on Messenger') + '</a>' +
+      '<div class="spacer"></div><div class="card" style="text-align:left"><b>📍 ' + te('Pickup point') + '</b><p class="small">' + esc(s.address) + '<br>' + esc(s.landmark) + '</p>' +
+      '<a class="btn alt" target="_blank" rel="noopener" href="' + esc(s.mapsUrl) + '">🗺️ ' + te('Get directions') + '</a></div>' +
+      '<p class="small">' + te('Don\'t forget your original driver\'s license and {deposit} cash deposit. Ingat sa biyahe!', { deposit: peso(b.quote.deposit) }) + ' 🌴</p>' +
+      '<a class="btn ghost" href="#/">' + te('Back to home') + '</a></div>' + footer();
   }
 
   // ---------- lookup ----------
   function renderLookup() {
-    app.innerHTML = '<div class="wrap"><section><h2>Find my booking</h2>' +
-      '<label class="f" for="lref">Booking reference</label><input id="lref" placeholder="BAY-0001" autocapitalize="characters">' +
-      '<label class="f" for="lmob">Mobile number used</label><input id="lmob" type="tel" inputmode="tel" value="' + esc(S.customer.mobile) + '">' +
-      '<div class="spacer"></div><button class="btn" id="lgo">Find booking</button><div id="lres" style="margin-top:14px"></div></section></div>' + footer();
+    app.innerHTML = '<div class="wrap"><section><h2>' + te('Find my booking') + '</h2>' +
+      '<label class="f" for="lref">' + te('Booking reference') + '</label><input id="lref" placeholder="BAY-0001" autocapitalize="characters">' +
+      '<label class="f" for="lmob">' + te('Mobile number used') + '</label><input id="lmob" type="tel" inputmode="tel" value="' + esc(S.customer.mobile) + '">' +
+      '<div class="spacer"></div><button class="btn" id="lgo">' + te('Find booking') + '</button><div id="lres" style="margin-top:14px"></div></section></div>' + footer();
     $('#lgo').onclick = function () {
       UI.api('GET', '/api/bookings/lookup?ref=' + encodeURIComponent($('#lref').value) + '&mobile=' + encodeURIComponent($('#lmob').value))
         .then(function (r) {
           $('#lres').innerHTML = '<div class="center"><div class="ref">' + esc(r.booking.ref) + '</div></div>' + bookingSummary(r.booking) +
-            '<a class="btn messenger" target="_blank" rel="noopener" href="' + esc(messengerLink(r.booking)) + '">💬 Message us</a>';
-        }, function (e) { $('#lres').innerHTML = '<div class="err-box">' + esc(e.message) + '</div>'; });
+            '<a class="btn messenger" target="_blank" rel="noopener" href="' + esc(messengerLink(r.booking)) + '">💬 ' + te('Message us') + '</a>';
+        }, function (e) { $('#lres').innerHTML = errBox(e.message); });
     };
   }
 })();
@@ -1499,7 +1854,9 @@ function RUN_ADMIN() {
       if (!q) return true;
       return [b.ref, b.customer.name, b.customer.mobile, b.customer.fb, b.model].join(' ').toLowerCase().indexOf(q) >= 0;
     }));
-    app.innerHTML = '<div class="wrap wide"><input class="search" id="q" type="search" placeholder="Search name, mobile, ref…" value="' + esc(query) + '">' +
+    app.innerHTML = '<div class="wrap wide">' + setupBanner() +
+      '<button class="btn" id="walkIn" style="margin-top:12px">＋ Walk-in booking</button>' +
+      '<input class="search" id="q" type="search" placeholder="Search name, mobile, ref…" value="' + esc(query) + '">' +
       '<div class="filters">' + FILTERS.map(function (f) {
         return '<button data-f="' + f[0] + '" class="' + (filter === f[0] ? 'on' : '') + '">' + f[1] + '<small>' + (counts[f[0]] || 0) + '</small></button>';
       }).join('') + '</div>' +
@@ -1507,6 +1864,8 @@ function RUN_ADMIN() {
     $$('.filters button').forEach(function (b) { b.onclick = function () { filter = b.dataset.f; renderBookings(); }; });
     $('#q').addEventListener('input', function () { query = this.value; var pos = this.selectionStart; renderBookings(); var el = $('#q'); el.focus(); el.setSelectionRange(pos, pos); });
     $$('.bk').forEach(function (el) { el.onclick = function () { openBooking(el.dataset.id); }; });
+    $('#walkIn').onclick = openWalkIn;
+    wireSetupBanner();
     var newest = D.bookings.reduce(function (m, b) { return Math.max(m, Date.parse(b.createdAt)); }, 0);
     setTimeout(function () { lastSeen = newest; localStorage.setItem('bay_admin_seen', newest); }, 3000);
   }
@@ -1514,6 +1873,7 @@ function RUN_ADMIN() {
     var u = unitOf(b);
     var isNew = Date.parse(b.createdAt) > lastSeen && b.status === 'pending';
     return '<button class="bk" data-id="' + b.id + '"><div class="top"><span><span class="ref">' + esc(b.ref) + '</span>' + (isNew ? '<span class="new">NEW</span>' : '') +
+      (b.source === 'walk-in' ? '<span class="tag">Walk-in</span>' : '') + (b.lang === 'tl' ? '<span class="tag">Tagalog</span>' : '') +
       '</span>' + statusPill(b.status) + '</div>' +
       '<div><b>' + esc(b.customer.name) + '</b> · ' + esc(b.model) + (u ? ' <span class="muted small">' + esc(u.plate) + '</span>' : '') + '</div>' +
       '<div class="small muted">' + BAY.fmtLocal(b.pickup) + ' → ' + BAY.fmtLocal(b.return) + '</div>' +
@@ -1524,6 +1884,7 @@ function RUN_ADMIN() {
   function patch(b, body) {
     return UI.api('PATCH', '/api/admin/bookings/' + b.id, body).then(function (r) {
       var i = D.bookings.indexOf(b); D.bookings[i] = r.booking;
+      if (r.sms) setTimeout(function () { UI.toast(r.sms.ok ? '📱 Confirmation SMS sent' : '⚠️ SMS not sent: ' + r.sms.error); }, 1200);
       return load().then(function () { return r.booking; });
     }, function (e) { UI.toast(e.message); throw e; });
   }
@@ -1539,7 +1900,8 @@ function RUN_ADMIN() {
     var statusBtns = [['confirmed', '✅ Confirm'], ['picked_up', '🛵 Picked up'], ['returned', '🏁 Returned'], ['cancelled', '✕ Cancel'], ['pending', '⏳ Pending']]
       .map(function (s) { return '<button class="btn alt' + (b.status === s[0] ? ' on' : '') + '" data-status="' + s[0] + '">' + s[1] + '</button>'; }).join('');
     var html =
-      '<p>' + statusPill(b.status) + ' <span class="small muted">booked ' + new Date(b.createdAt).toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' }) + '</span></p>' +
+      '<p>' + statusPill(b.status) + (b.source === 'walk-in' ? ' <span class="tag">Walk-in</span>' : '') + (b.lang === 'tl' ? ' <span class="tag">Tagalog</span>' : '') +
+        ' <span class="small muted">booked ' + new Date(b.createdAt).toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' }) + '</span></p>' +
       '<div class="actions">' + statusBtns + '</div>' +
       '<h3 style="margin-top:16px">Rental</h3><dl class="kv">' +
         '<dt>Pickup</dt><dd>' + BAY.fmtLocal(b.pickup) + '</dd><dt>Return</dt><dd>' + BAY.fmtLocal(b.return) + '</dd>' +
@@ -1585,11 +1947,175 @@ function RUN_ADMIN() {
         $('#msgs', body).innerHTML =
           '<p class="small"><b>Confirmation for customer</b> (Messenger / SMS)</p><pre class="msg">' + esc(m.customer) + '</pre>' +
           '<div class="row"><button class="btn sm" id="cpC">📋 Copy message</button><a class="btn sm alt" href="' + esc(smsHref) + '">Open SMS</a></div>' +
+          smsBlock(b, m.sms) +
           '<p class="small" style="margin-top:12px"><b>New-booking alert</b> (SMS-ready)</p><pre class="msg">' + esc(m.admin) + '</pre>' +
           '<button class="btn sm alt" id="cpA">📋 Copy alert</button>';
         $('#cpC', body).onclick = function () { UI.copy(m.customer); };
         $('#cpA', body).onclick = function () { UI.copy(m.admin); };
+        if ($('#sendSms', body)) $('#sendSms', body).onclick = function () {
+          var btn = this; btn.disabled = true; btn.textContent = 'Sending…';
+          UI.api('POST', '/api/admin/bookings/' + b.id + '/sms', { kind: 'confirm' }).then(function () {
+            UI.toast('📱 SMS sent'); load().then(function () { close(); openBooking(b.id); });
+          }, function (e) { UI.toast(e.message); btn.disabled = false; btn.textContent = '📱 Send SMS now'; });
+        };
       });
+    });
+  }
+
+  function smsBlock(b, text) {
+    var log = (b.sms || []).map(function (x) {
+      return '<li>' + (x.ok ? '✅' : '⚠️') + ' ' + esc(x.kind === 'received' ? '"Booking received"' : '"Confirmed"') + ' · ' +
+        new Date(x.at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' }) + (x.ok ? '' : ' · ' + esc(x.error || '')) + '</li>';
+    }).join('');
+    return '<p class="small" style="margin-top:12px"><b>Text message (SMS)</b> · ' + (text.length > 160 ? '2 SMS credits' : '1 SMS credit') + '</p><pre class="msg">' + esc(text) + '</pre>' +
+      (D.smsEnabled
+        ? '<button class="btn sm alt" id="sendSms">📱 Send SMS now</button>' + (D.settings.smsOnConfirm ? '<span class="small muted"> · sent automatically when you tap Confirm</span>' : '')
+        : '<p class="small muted">Automatic SMS is not set up yet (needs a Semaphore account). Use Copy message or Open SMS for now.</p>') +
+      (log ? '<ul class="small sms-log">' + log + '</ul>' : '');
+  }
+
+  // ---------- setup checklist ----------
+  function setupBanner() {
+    var items = (D.setup || []).filter(function (x) { return x.id !== 'sms'; });
+    var left = items.filter(function (x) { return !x.done; }).length;
+    if (!left) return '';
+    return '<button class="setup-banner" id="setupBanner">🚀 <b>Go-live setup:</b> ' + (items.length - left) + ' of ' + items.length + ' done · <u>See what\'s left</u></button>';
+  }
+  function wireSetupBanner() { var b = $('#setupBanner'); if (b) b.onclick = function () { location.hash = '#summary'; }; }
+  function setupCard() {
+    var items = D.setup || [];
+    var req = items.filter(function (x) { return x.id !== 'sms'; });
+    var done = req.filter(function (x) { return x.done; }).length;
+    return '<div class="card setup"><h3>🚀 Go-live checklist <span class="small muted">' + done + ' of ' + req.length + ' done</span></h3><ul class="checklist">' +
+      items.map(function (x) {
+        var action = x.done ? '' : x.id === 'samples' ? '<button class="btn sm alt" id="clearSamples">Delete samples</button>'
+          : x.id === 'prices' ? '<button class="btn sm alt" id="pricesOk">Mark reviewed</button>'
+          : x.tab ? '<a class="btn sm alt" href="#' + x.tab + '">Open</a>' : '';
+        return '<li class="' + (x.done ? 'done' : '') + '"><span class="ck">' + (x.done ? '✅' : '⬜') + '</span><div><b>' + esc(x.label) + '</b>' +
+          (x.done ? '' : '<div class="small muted">' + esc(x.hint) + '</div>') + '</div>' + action + '</li>';
+      }).join('') + '</ul></div>';
+  }
+  function wireSetupCard() {
+    if ($('#clearSamples')) $('#clearSamples').onclick = function () {
+      if (!confirm('Delete all sample bookings? Real bookings are not affected.')) return;
+      UI.api('DELETE', '/api/admin/sample-bookings').then(function (r) { UI.toast('Deleted ' + r.removed + ' sample bookings'); load(); }, function (e) { UI.toast(e.message); });
+    };
+    if ($('#pricesOk')) $('#pricesOk').onclick = function () {
+      if (!confirm('Have you checked the scooter rates (Fleet tab), deposit, late fee and add-on prices (Settings)?')) return;
+      UI.api('PUT', '/api/admin/settings', { pricesReviewed: true }).then(function () { UI.toast('Marked as reviewed'); load(); });
+    };
+  }
+
+  // ---------- walk-in booking ----------
+  function roundedNow() {
+    var n = BAY.nowLocal(), m = BAY.minutesOf(n.slice(11));
+    m = Math.ceil(m / 15) * 15;
+    return BAY.fromEpoch(BAY.toEpoch(n.slice(0, 10) + 'T00:00') + m * 60e3);
+  }
+  function openWalkIn() {
+    var s = D.settings;
+    var units = D.units.filter(function (u) { return u.status !== 'maintenance'; });
+    var start = roundedNow(), end = BAY.addHours(start, 24);
+    var st = { status: 'picked_up', addons: {}, method: 'cash', paid: true, deposit: true, license: null };
+    var riders = []; for (var i = 1; i <= (s.maxRiders || 2); i++) riders.push(i);
+    var html =
+      '<div class="seg" id="wStatus"><button data-s="picked_up" class="on">🛵 Renting now</button><button data-s="confirmed">📅 Reserve for later</button></div>' +
+      '<label class="f" for="wUnit">Scooter</label><select id="wUnit">' + units.map(function (u) {
+        return '<option value="' + u.id + '">' + esc(u.name + ' · ' + u.plate) + (u.status === 'rented' ? ' (rented)' : '') + '</option>'; }).join('') + '</select>' +
+      '<div class="grid2"><div><label class="f" for="wPd">Pickup</label><input type="date" id="wPd" value="' + start.slice(0, 10) + '"></div>' +
+        '<div><label class="f" for="wPt">&nbsp;</label><input type="time" id="wPt" step="900" value="' + start.slice(11) + '"></div>' +
+        '<div><label class="f" for="wRd">Return</label><input type="date" id="wRd" value="' + end.slice(0, 10) + '"></div>' +
+        '<div><label class="f" for="wRt">&nbsp;</label><input type="time" id="wRt" step="900" value="' + end.slice(11) + '"></div></div>' +
+      '<div class="quick" id="wQuick" style="margin-top:8px"><button data-h="' + (s.halfDayHours || 6) + '">Half day</button><button data-h="24">1 day</button><button data-h="48">2 days</button><button data-h="72">3 days</button><button data-h="168">1 week</button></div>' +
+      '<div id="wAvail" class="small" style="margin-top:6px"></div>' +
+      '<label class="f" for="wName">Customer name</label><input id="wName" autocomplete="off">' +
+      '<div class="grid2"><div><label class="f" for="wMob">Mobile <span class="opt">(optional)</span></label><input id="wMob" type="tel" inputmode="tel"></div>' +
+        '<div><label class="f" for="wFb">Facebook <span class="opt">(optional)</span></label><input id="wFb"></div></div>' +
+      '<label class="f" for="wStay">Staying at <span class="opt">(optional)</span></label><input id="wStay">' +
+      '<label class="f">Riders</label><div class="seg" id="wRiders">' + riders.map(function (r) { return '<button data-r="' + r + '" class="' + (r === 1 ? 'on' : '') + '">' + r + '</button>'; }).join('') + '</div>' +
+      '<label class="f">Add-ons</label><div class="card" style="padding:4px 12px">' + s.addons.filter(function (a) { return a.active; }).map(function (a) {
+        return '<div class="addon"><div class="name">' + esc(a.name) + ' <span class="small muted">' + peso(a.price) + (a.perDay ? '/day' : '') + '</span></div>' +
+          '<div class="qty"><button data-minus="' + a.id + '">−</button><span id="wq_' + a.id + '">0</span><button data-plus="' + a.id + '">+</button></div></div>'; }).join('') + '</div>' +
+      '<div class="card sand" id="wPrice"></div>' +
+      '<label class="f">Payment</label><div class="seg" id="wMethod"><button data-m="cash" class="on">💵 Cash</button><button data-m="gcash">📱 GCash</button></div>' +
+      '<input id="wRef" class="hidden" placeholder="GCash reference no." style="margin-top:8px">' +
+      '<label class="check"><input type="checkbox" id="wPaid" checked><span>Rental paid</span></label>' +
+      '<label class="check" id="wDepRow"><input type="checkbox" id="wDep" checked><span>Deposit collected</span></label>' +
+      '<label class="f">License photo <span class="opt">(optional)</span></label>' +
+      '<label class="upload" id="wLicBox"><input type="file" accept="image/*" id="wLic"><div><b>Tap to photograph the license</b></div></label>' +
+      '<label class="f" for="wNotes">Notes <span class="opt">(fuel level, helmet no., ID left…)</span></label><textarea id="wNotes"></textarea>' +
+      '<div id="wMsg"></div><button class="btn big" id="wSave" style="margin-top:12px">Save walk-in booking</button>';
+    UI.modal('Walk-in booking', html, function (body, close) {
+      var q = function (sel) { return $(sel, body); };
+      var win = function () { return { p: q('#wPd').value + 'T' + q('#wPt').value, r: q('#wRd').value + 'T' + q('#wRt').value }; };
+      function refresh() {
+        var w = win(), u = D.units.filter(function (x) { return x.id === q('#wUnit').value; })[0];
+        var valid = BAY.isLocal(w.p) && BAY.isLocal(w.r) && BAY.toEpoch(w.r) > BAY.toEpoch(w.p);
+        if (!u || !valid) { q('#wPrice').innerHTML = '<span class="small muted">Set a return time after pickup.</span>'; q('#wAvail').textContent = ''; return; }
+        var clash = D.bookings.filter(function (b) {
+          return b.scooterId === u.id && BAY.ACTIVE_STATUSES.indexOf(b.status) >= 0 && BAY.overlaps(w.p, w.r, b.pickup, b.return, s.bufferMinutes);
+        })[0];
+        q('#wAvail').innerHTML = clash ? '<span style="color:var(--err)">⚠️ Booked by ' + esc(clash.customer.name) + ' (' + esc(clash.ref) + ') ' + BAY.fmtLocal(clash.pickup) + ' → ' + BAY.fmtLocal(clash.return) + '</span>'
+          : '<span style="color:var(--ok)">✓ Free for this time</span>';
+        var qt = BAY.quote(u, w.p, w.r, st.addons, s);
+        q('#wPrice').innerHTML = '<table class="breakdown"><tr><td>' + esc(qt.rentalLabel) + '</td><td>' + peso(qt.rental) + '</td></tr>' +
+          qt.addons.map(function (a) { return '<tr><td>' + esc(a.name) + (a.qty > 1 ? ' × ' + a.qty : '') + '</td><td>' + peso(a.amount) + '</td></tr>'; }).join('') +
+          '<tr class="total"><td>Rental total</td><td>' + peso(qt.total) + '</td></tr><tr class="dep"><td>Deposit</td><td>' + peso(qt.deposit) + '</td></tr>' +
+          '<tr class="due"><td>Collect now</td><td>' + peso((st.paid ? qt.total : 0) + (st.deposit && st.status === 'picked_up' ? qt.deposit : 0)) + '</td></tr></table>';
+      }
+      function seg(id, key, attr, after) {
+        q(id).onclick = function (e) {
+          var b = e.target.closest('button'); if (!b) return;
+          st[key] = b.dataset[attr]; $$(id + ' button', body).forEach(function (x) { x.classList.toggle('on', x === b); });
+          if (after) after(); refresh();
+        };
+      }
+      seg('#wStatus', 'status', 's', function () {
+        q('#wDepRow').classList.toggle('hidden', st.status !== 'picked_up');
+        if (st.status === 'confirmed') { q('#wPaid').checked = st.paid = false; }
+      });
+      seg('#wMethod', 'method', 'm', function () { q('#wRef').classList.toggle('hidden', st.method !== 'gcash'); });
+      seg('#wRiders', 'riders', 'r');
+      ['#wUnit', '#wPd', '#wPt', '#wRd', '#wRt'].forEach(function (id) { q(id).addEventListener('change', refresh); });
+      q('#wQuick').onclick = function (e) {
+        var b = e.target.closest('button'); if (!b) return;
+        var r = BAY.addHours(win().p, +b.dataset.h);
+        q('#wRd').value = r.slice(0, 10); q('#wRt').value = r.slice(11); refresh();
+      };
+      $$('[data-plus],[data-minus]', body).forEach(function (b) {
+        b.onclick = function () {
+          var id = b.dataset.plus || b.dataset.minus, a = s.addons.filter(function (x) { return x.id === id; })[0];
+          var n = Math.max(0, Math.min(a.maxQty || 1, (st.addons[id] || 0) + (b.dataset.plus ? 1 : -1)));
+          if (n) st.addons[id] = n; else delete st.addons[id];
+          q('#wq_' + id).textContent = n; refresh();
+        };
+      });
+      q('#wPaid').onchange = function () { st.paid = this.checked; refresh(); };
+      q('#wDep').onchange = function () { st.deposit = this.checked; refresh(); };
+      q('#wLic').onchange = function (e) {
+        var box = q('#wLicBox'), input = this; box.querySelector('b').textContent = 'Compressing…';
+        UI.compressImage(e.target.files[0], 1400, 0.72).then(function (d) {
+          st.license = d; box.innerHTML = ''; box.appendChild(input);
+          box.insertAdjacentHTML('beforeend', '<img src="' + d + '" alt="License"><span class="small">✅ Photo added · tap to change</span>');
+        }, function (er) { UI.toast(er.message); box.querySelector('b').textContent = 'Tap to photograph the license'; });
+      };
+      q('#wSave').onclick = function () {
+        var btn = this, w = win();
+        btn.disabled = true; btn.textContent = 'Saving…';
+        UI.api('POST', '/api/admin/walkins', {
+          scooterId: q('#wUnit').value, pickup: w.p, return: w.r, status: st.status, addons: st.addons,
+          customer: { name: q('#wName').value, mobile: q('#wMob').value, fb: q('#wFb').value, stayingAt: q('#wStay').value, riders: +(st.riders || 1) },
+          method: st.method, gcashRef: q('#wRef').value, paid: st.paid, depositCollected: st.deposit,
+          license: st.license, notes: q('#wNotes').value
+        }).then(function (r) {
+          close(); UI.toast('Saved ' + r.booking.ref);
+          filter = r.booking.status; load();
+        }, function (e) {
+          q('#wMsg').innerHTML = '<div class="err-box">' + esc(e.message) + '</div>';
+          btn.disabled = false; btn.textContent = 'Save walk-in booking';
+        });
+      };
+      refresh();
     });
   }
 
@@ -1638,7 +2164,7 @@ function RUN_ADMIN() {
     var pick = D.bookings.filter(function (b) { return ['pending', 'confirmed'].indexOf(b.status) >= 0 && b.pickup.indexOf(t) === 0; }).sort(function (a, b) { return a.pickup.localeCompare(b.pickup); });
     var rets = D.bookings.filter(function (b) { return b.status === 'picked_up' && b.return.indexOf(t) === 0; }).sort(function (a, b) { return a.return.localeCompare(b.return); });
     var late = D.bookings.filter(function (b) { return b.status === 'picked_up' && BAY.toEpoch(b.return) < Date.now(); });
-    app.innerHTML = '<div class="wrap wide"><section>' +
+    app.innerHTML = '<div class="wrap wide"><section>' + setupCard() +
       '<h2>This week <span class="small muted">(from ' + BAY.fmtDate(s.weekStart) + ')</span></h2><div class="stats">' +
         stat(s.week.bookings, 'Bookings') + stat(peso(s.week.revenue), 'Revenue') + stat(s.pending, 'Awaiting confirmation') + stat(s.outNow, 'Scooters out now') + '</div>' +
       '<h2 style="margin-top:18px">This month</h2><div class="stats">' +
@@ -1651,6 +2177,7 @@ function RUN_ADMIN() {
       '<div class="spacer"></div><a class="btn alt" id="exportCsv" href="/api/admin/export.csv">⬇️ Export all bookings (CSV)</a></section></div>';
     if (UI.exportCsv) $('#exportCsv').onclick = function (e) { e.preventDefault(); UI.exportCsv(); };
     $$('.bk').forEach(function (el) { el.onclick = function () { openBooking(el.dataset.id); }; });
+    wireSetupCard();
   }
 
   // ---------- fleet ----------
@@ -1724,12 +2251,19 @@ function RUN_ADMIN() {
       '<div class="card"><h3>➕ Add-ons</h3><div class="edit-list" id="addons"></div><button class="btn sm alt" id="addAddon">＋ Add add-on</button>' +
         '<p class="small muted">Price · Max qty · tick "/day" to charge per day.</p></div>' +
       '<div class="card"><h3>📜 Rental terms</h3><p class="small muted">One rule per line. Use {deposit}, {lateFee}, {cancelHours} to insert current values.</p>' +
-        '<textarea id="terms" style="min-height:200px">' + esc(s.terms.join('\n')) + '</textarea></div>' +
+        '<textarea id="terms" style="min-height:200px">' + esc(s.terms.join('\n')) + '</textarea>' +
+        '<label class="f" for="termsTl">Tagalog version <span class="opt">(shown when customers switch to Tagalog; leave empty to show English)</span></label>' +
+        '<textarea id="termsTl" style="min-height:200px">' + esc((s.termsTl || []).join('\n')) + '</textarea></div>' +
+      '<div class="card"><h3>💬 Text messages (SMS)</h3>' +
+        '<p class="small ' + (D.smsEnabled ? '' : 'muted') + '">' + (D.smsEnabled ? '✅ SMS gateway connected.' : 'Not connected yet. Add your Semaphore API key to the server settings (see README) to turn this on.') + '</p>' +
+        '<label class="check"><input type="checkbox" data-k="smsOnConfirm" data-bool' + (s.smsOnConfirm ? ' checked' : '') + '><span>Text the customer automatically when I tap <b>Confirm</b></span></label>' +
+        '<label class="check"><input type="checkbox" data-k="smsOnReceived" data-bool' + (s.smsOnReceived ? ' checked' : '') + '><span>Also text "we got your booking" as soon as they book <span class="small muted">(uses more credits)</span></span></label></div>' +
       '<div class="card"><h3>📱 GCash</h3>' + inp('gcashNumber', 'GCash number') + inp('gcashName', 'Account name') +
         '<label class="f">GCash QR code</label>' + photoPicker('qr', s.gcashQr ? UI.mediaUrl(s.gcashQr) : '', s.gcashQr ? 'Tap to replace QR' : 'Upload QR image') +
         (s.gcashQr ? '<button class="btn sm ghost" id="rmQr">Remove QR</button>' : '') + '</div>' +
-      '<div class="card"><h3>🏝️ Shop info</h3>' + inp('shopName', 'Shop name') + inp('tagline', 'Tagline') +
+      '<div class="card"><h3>🏝️ Shop info</h3>' + inp('shopName', 'Shop name') + inp('tagline', 'Tagline') + inp('taglineTl', 'Tagline (Tagalog)') +
         '<label class="f" for="s_intro">Intro</label><textarea id="s_intro" data-k="intro">' + esc(s.intro) + '</textarea>' +
+        '<label class="f" for="s_introTl">Intro (Tagalog)</label><textarea id="s_introTl" data-k="introTl">' + esc(s.introTl || '') + '</textarea>' +
         inp('address', 'Address') + inp('landmark', 'Landmark') + inp('mapsUrl', 'Google Maps link', 'url') + inp('phone', 'Phone', 'tel') +
         inp('messengerUrl', 'Messenger link (m.me/…)', 'url') + inp('adminEmail', 'Admin email for alerts', 'email') +
         '<label class="f">Shop photos (landing page)</label><div class="thumbs" id="gal"></div>' +
@@ -1773,8 +2307,9 @@ function RUN_ADMIN() {
     if ($('#rmQr')) $('#rmQr').onclick = function () { qr = null; var img = $('#qrBox img'); if (img) img.remove(); };
     $('#saveSettings').onclick = function () {
       var data = { addons: addons.filter(function (a) { return a.name.trim(); }), gallery: gallery, gcashQr: qr,
-        terms: $('#terms').value.split('\n').map(function (t) { return t.trim(); }).filter(Boolean) };
-      $$('[data-k]').forEach(function (el) { data[el.dataset.k] = el.hasAttribute('data-num') ? +el.value : el.value; });
+        terms: $('#terms').value.split('\n').map(function (t) { return t.trim(); }).filter(Boolean),
+        termsTl: $('#termsTl').value.split('\n').map(function (t) { return t.trim(); }).filter(Boolean) };
+      $$('[data-k]').forEach(function (el) { data[el.dataset.k] = el.hasAttribute('data-bool') ? el.checked : el.hasAttribute('data-num') ? +el.value : el.value; });
       UI.api('PUT', '/api/admin/settings', data).then(function () { UI.toast('Settings saved'); load(); }, function (e) { UI.toast(e.message); });
     };
     $('#savePw').onclick = function () {
@@ -1790,7 +2325,7 @@ function RUN_ADMIN() {
 (function () {
   var mode = 'customer';
   try { mode = sessionStorage.getItem('bay_demo_mode') || 'customer'; } catch (e) {}
-  var T = {"customer":"<header class=\"topbar\">\n  <div class=\"wrap\">\n    <a class=\"brand\" href=\"#/\">\n      <svg viewBox=\"0 0 32 32\" aria-hidden=\"true\"><circle cx=\"16\" cy=\"16\" r=\"16\" fill=\"#0b6e99\"/><path d=\"M4 20q6-4 12 0t12 0v8H4z\" fill=\"#f4e7cf\"/><circle cx=\"22\" cy=\"10\" r=\"4\" fill=\"#ffd36b\"/></svg>\n      <span id=\"brandName\">Baybayin Scooter Rental</span>\n    </a>\n    <a class=\"iconbtn\" href=\"#/lookup\" aria-label=\"Find my booking\" title=\"Find my booking\" style=\"display:flex;align-items:center;justify-content:center;text-decoration:none\">🔎</a>\n  </div>\n</header>\n<main id=\"app\"><div class=\"spinner\" aria-label=\"Loading\"></div></main>\n<noscript><p class=\"wrap\">Please enable JavaScript to book, or message us on Facebook Messenger.</p></noscript>","admin":"<header class=\"topbar\">\n  <div class=\"wrap wide\">\n    <span class=\"brand\">🛵 <span>Baybayin Admin</span></span>\n    <button class=\"iconbtn\" id=\"refresh\" aria-label=\"Refresh\" title=\"Refresh\">⟳</button>\n    <button class=\"iconbtn hidden\" id=\"logout\" title=\"Log out\" style=\"font-size:.85rem;font-weight:700\">Log out</button>\n  </div>\n</header>\n<main id=\"app\"><div class=\"spinner\"></div></main>\n<nav class=\"tabs hidden\" id=\"tabs\">\n  <a href=\"#bookings\" data-tab=\"bookings\"><span>📋</span>Bookings<b class=\"count hidden\" id=\"pendingCount\"></b></a>\n  <a href=\"#calendar\" data-tab=\"calendar\"><span>📅</span>Calendar</a>\n  <a href=\"#summary\" data-tab=\"summary\"><span>📊</span>Summary</a>\n  <a href=\"#fleet\" data-tab=\"fleet\"><span>🛵</span>Fleet</a>\n  <a href=\"#settings\" data-tab=\"settings\"><span>⚙️</span>Settings</a>\n</nav>"};
+  var T = {"customer":"<header class=\"topbar\">\n  <div class=\"wrap\">\n    <a class=\"brand\" href=\"#/\">\n      <svg viewBox=\"0 0 32 32\" aria-hidden=\"true\"><circle cx=\"16\" cy=\"16\" r=\"16\" fill=\"#0b6e99\"/><path d=\"M4 20q6-4 12 0t12 0v8H4z\" fill=\"#f4e7cf\"/><circle cx=\"22\" cy=\"10\" r=\"4\" fill=\"#ffd36b\"/></svg>\n      <span id=\"brandName\">Baybayin Scooter Rental</span>\n    </a>\n    <button class=\"langbtn\" id=\"langBtn\" type=\"button\">Tagalog</button>\n    <a class=\"iconbtn\" href=\"#/lookup\" aria-label=\"Find my booking\" title=\"Find my booking\" style=\"display:flex;align-items:center;justify-content:center;text-decoration:none\">🔎</a>\n  </div>\n</header>\n<main id=\"app\"><div class=\"spinner\" aria-label=\"Loading\"></div></main>\n<noscript><p class=\"wrap\">Please enable JavaScript to book, or message us on Facebook Messenger.</p></noscript>","admin":"<header class=\"topbar\">\n  <div class=\"wrap wide\">\n    <span class=\"brand\">🛵 <span>Baybayin Admin</span></span>\n    <button class=\"iconbtn\" id=\"refresh\" aria-label=\"Refresh\" title=\"Refresh\">⟳</button>\n    <button class=\"iconbtn hidden\" id=\"logout\" title=\"Log out\" style=\"font-size:.85rem;font-weight:700\">Log out</button>\n  </div>\n</header>\n<main id=\"app\"><div class=\"spinner\"></div></main>\n<nav class=\"tabs hidden\" id=\"tabs\">\n  <a href=\"#bookings\" data-tab=\"bookings\"><span>📋</span>Bookings<b class=\"count hidden\" id=\"pendingCount\"></b></a>\n  <a href=\"#calendar\" data-tab=\"calendar\"><span>📅</span>Calendar</a>\n  <a href=\"#summary\" data-tab=\"summary\"><span>📊</span>Summary</a>\n  <a href=\"#fleet\" data-tab=\"fleet\"><span>🛵</span>Fleet</a>\n  <a href=\"#settings\" data-tab=\"settings\"><span>⚙️</span>Settings</a>\n</nav>"};
   var other = mode === 'admin' ? 'customer' : 'admin';
   var ribbon = '<div class="demo-ribbon"><div class="wrap"><span><b>DEMO</b> · bookings are saved in this browser only' +
     (mode === 'admin' ? ' · password <b>' + BAY_DEMO.password + '</b>' : '') + '</span>' +

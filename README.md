@@ -33,7 +33,7 @@ npm run build:demo
 The first server run creates `data/db.json` with **sample data**: 5 scooters (one is under maintenance) and 6 bookings in different statuses, dated around today.
 
 ```bash
-npm test             # API, pricing, Redis/serverless and demo-build tests (13 tests)
+npm test             # API, pricing, SMS, walk-in, Redis/serverless and demo-build tests (18 tests)
 npm run seed         # reset data/db.json to sample data (overwrites!)
 ```
 
@@ -47,8 +47,20 @@ npm run seed         # reset data/db.json to sample data (overwrites!)
 | `NOTIFY_WEBHOOK_URL` | Receives a JSON POST on every new booking (works with Make, Zapier, n8n, Google Apps Script, etc.) |
 | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` | Free, instant new-booking alerts to the owner's phone through Telegram |
 | `RESEND_API_KEY` + `ADMIN_EMAIL` (+ `MAIL_FROM`) | New-booking email through [Resend](https://resend.com) (free tier available) |
+| `SEMAPHORE_API_KEY` | Turns on **automatic text messages to customers** through [Semaphore](https://semaphore.co), a Philippine SMS gateway (prepaid credits, roughly ₱0.50 per SMS) |
+| `SEMAPHORE_SENDER_NAME` | Your approved sender name (e.g. `BAYBAYIN`). Without it, texts come from Semaphore's default name |
+| `SMS_WEBHOOK_URL` | Alternative to Semaphore: receives `{to, message}` as JSON, to plug in any other SMS gateway |
 
 Each new booking also prints an **SMS-ready alert** to the server log. The admin dashboard checks for new bookings every minute and shows a badge.
+
+### Text messages to customers (SMS)
+
+With `SEMAPHORE_API_KEY` set, the customer gets a text automatically when you tap **Confirm** on their booking. You can switch this off in Admin → Settings → Text messages, and you can also switch on a "we got your booking" text sent as soon as they book. Each booking shows its SMS history and has a **Send SMS now** button for resending.
+
+- Texts are written to fit **one SMS credit** (160 plain characters, so "P1,000" rather than "₱1,000", and no emoji, which would cost extra).
+- Customers who booked in Tagalog get the Tagalog text.
+- Semaphore only sends to Philippine numbers. For foreign numbers the booking still goes through, and the SMS history notes "send it on Messenger instead".
+- To get a key: sign up at semaphore.co, buy credits, and request a sender name (approval takes a few days). Then add the key in Vercel → Project → Settings → Environment Variables and redeploy.
 
 ## How it works
 
@@ -61,7 +73,10 @@ Each new booking also prints an **SMS-ready alert** to the server log. The admin
 | **Pricing** | Up to 6 hrs = half-day rate (if set). Longer rentals are charged per started day, with a 60-min grace period. From 3 days on, the multi-day rate applies. Add-ons are a flat price or per day. The deposit is shown separately. All of these are editable. |
 | **Uploads** | Licenses and GCash screenshots are stored privately and only logged-in admins can view them. Scooter photos, the GCash QR and shop photos are public. |
 | **Messages** | Each booking has a **Copy message** button with a ready-made Messenger/SMS confirmation for the customer, plus an **Open SMS** shortcut. |
-| **Terms** | Edited in Settings, one rule per line. `{deposit}`, `{lateFee}` and `{cancelHours}` fill in the current values automatically. |
+| **Terms** | Edited in Settings, one rule per line. `{deposit}`, `{lateFee}` and `{cancelHours}` fill in the current values automatically. There's a separate Tagalog version. |
+| **English / Tagalog** | Customers tap **Tagalog / English** in the top bar (phones set to Filipino start in Tagalog). Translations live in `public/js/i18n.js`. The tagline, intro and terms have Tagalog fields in Settings. Each booking remembers the customer's language, so their confirmation message and SMS match it. The admin dashboard stays in English. |
+| **Walk-in bookings** | Admin → Bookings → **＋ Walk-in booking**, for customers at the counter. Pick the exact scooter (plate), choose "Renting now" or "Reserve for later", and see live price and clash warnings. Paid and deposit are ticked by default, the license photo is optional, and pickup can be earlier than now. The server still blocks double-bookings. Walk-ins show a **Walk-in** tag and are marked in the CSV export. |
+| **Go-live checklist** | Admin → Summary lists what still needs setting up (password, GCash, QR, Messenger, phone, scooter photos, price review, sample bookings, storage, SMS). A banner on the Bookings tab shows progress until everything is done, and sample bookings can be deleted with one tap. |
 
 ### Sample prices (replace in Admin)
 
@@ -74,7 +89,7 @@ Each new booking also prints an **SMS-ready alert** to the server log. The admin
 
 Deposit ₱1,000 · Extra helmet ₱50 · Phone holder ₱30 · Port/resort delivery ₱150 · Late fee ₱100/hr · Free cancellation up to 24 hrs before pickup.
 
-**Placeholders to replace in Admin → Settings:** GCash number and name, GCash QR image, Messenger link (`https://m.me/yourpage`), phone number, Google Maps link (currently a search for the FilOil station), and shop photos.
+**Placeholders to replace in Admin → Settings** (the go-live checklist tracks these): GCash number and name, GCash QR image, Messenger link (`https://m.me/yourpage`), phone number, Google Maps link (currently a search for the FilOil station), and shop photos.
 
 ## Project layout
 
@@ -84,6 +99,8 @@ api/index.js         Vercel function entry point (+ vercel.json)
 lib/store.js         Storage: JSON file (local/VPS) or Upstash Redis (Vercel)
 lib/seed.js          Seeds the database (sample data from core.js + admin password)
 lib/messages.js      Webhook / Telegram / email new-booking alerts
+lib/sms.js           Customer text messages via Semaphore (or any gateway via webhook)
+public/js/i18n.js    English / Tagalog text for the customer site
 public/js/core.js    Booking rules (availability, validation, reports, messages), shared by server + demo
 public/js/demo-api.js  In-browser backend for the one-file demo
 scripts/build-demo.js  Builds dist/baybayin-demo.html
@@ -138,14 +155,14 @@ Run `npm start` with `DATA_DIR` on a persistent volume. Without Redis variables,
 | Phase | Item | Estimate | Notes |
 |---|---|---|---|
 | **2: Go-live** | Deploy to a host with a persistent volume + domain + HTTPS | 0.5 day | Needs owner's domain/hosting choice |
-| | Replace placeholders, real photos, real prices, test on staff phones | 0.5 day | Owner provides content |
+| | Replace placeholders, real photos, real prices, test on staff phones | 0.5 day | Owner provides content; go-live checklist ✅ built |
 | | Daily automatic backup of `data/` (e.g. to Google Drive or S3) | 0.5 day | |
-| **3: Ops** | Automatic SMS to customer on confirmation (Semaphore / Movider PH SMS gateways) | 1–1.5 days | ~₱0.50/SMS, needs sender-name approval |
-| | Admin creates walk-in bookings from the dashboard | 1 day | |
+| **3: Ops** | ~~Automatic SMS to customer on confirmation~~ | ✅ done | Needs a Semaphore key + sender name |
+| | ~~Admin creates walk-in bookings from the dashboard~~ | ✅ done | |
 | | Late-return fee calculator on return + damage/fuel checklist with photos | 1–1.5 days | |
 | | Customer self-cancellation within the free-cancel window | 0.5 day | |
 | | Multiple admin/staff accounts with roles | 1 day | |
-| **4: Growth** | Tagalog language toggle | 1 day | Copy is already centralised |
+| **4: Growth** | ~~Tagalog language toggle~~ | ✅ done | Customer site; admin stays English |
 | | Offline-capable PWA (installable, caches the shell for patchy signal) | 1 day | |
 | | Seasonal pricing (peak/holiday rates), promo codes | 1–2 days | |
 | | Move to Postgres (only if reporting needs grow) | 1–2 days | Redis/JSON is fine for a single small shop |

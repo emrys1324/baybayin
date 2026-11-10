@@ -60,9 +60,20 @@
       if (!session.get()) CORE.fail(401, 'Please log in.');
       var sub = p.slice(11), res;
       if (sub === 'me') return { ok: true };
-      if (sub === 'data') { var d = clone(data); delete d.demoPassword; d.summary = CORE.summary(data); d.now = BAY.nowLocal(); return d; }
+      if (sub === 'data') {
+        var d = clone(data); delete d.demoPassword;
+        var extra = { defaultPassword: (data.demoPassword || DEMO_PASSWORD) === DEMO_PASSWORD, smsEnabled: false, storage: 'browser' };
+        return Object.assign(d, extra, { summary: CORE.summary(data), now: BAY.nowLocal(), setup: CORE.setupChecklist(data, extra) });
+      }
       if ((mm = /^bookings\/([a-f0-9]+)$/.exec(sub))) { res = CORE.updateBooking(data, mm[1], body); save(); return { booking: res }; }
       if ((mm = /^bookings\/([a-f0-9]+)\/messages$/.exec(sub))) return CORE.messages(data, mm[1]);
+      if (/^bookings\/[a-f0-9]+\/sms$/.test(sub)) CORE.fail(400, 'SMS is not available in the demo.');
+      if (sub === 'walkins') {
+        var wd = CORE.prepareWalkIn(data, body);
+        var wb = CORE.commitWalkIn(data, wd, { licensePhoto: body.license ? saveImage(body.license) : null });
+        save(); return { booking: wb };
+      }
+      if (sub === 'sample-bookings') { var n = CORE.clearSamples(data).length; save(); return { removed: n }; }
       if (sub === 'units' && method === 'POST') { res = CORE.addUnit(data, body); save(); return { unit: res }; }
       if ((mm = /^units\/([a-z0-9]+)$/.exec(sub))) {
         if (method === 'PUT') { res = CORE.editUnit(data, mm[1], body); save(); return { unit: res }; }

@@ -23,7 +23,9 @@
     return {
       shopName: 'Baybayin Scooter Rental',
       tagline: 'Explore San Agustin & Tablas Island on two wheels',
+      taglineTl: 'Libutin ang San Agustin at Tablas Island sakay ng scooter',
       intro: 'Fresh off the ferry? Grab a well-maintained scooter and ride to the falls, beaches and viewpoints of Tablas at your own pace. Helmets included. Mabuhay!',
+      introTl: 'Kababa lang ng barko? Mag-rent ng maayos na scooter at puntahan ang mga talon, beach at viewpoint ng Tablas sa sarili mong oras. Kasama na ang helmet. Mabuhay!',
       address: 'Sitio Sawang, Brgy. Dubduban, San Agustin, Romblon',
       landmark: 'Beside the FilOil gas station and Mon\'s Pahuway Café',
       mapsUrl: 'https://www.google.com/maps/search/?api=1&query=FilOil+Dubduban+San+Agustin+Romblon',
@@ -48,6 +50,9 @@
       freeCancelHours: 24,
       maxRiders: 2,
       adminEmail: '',
+      smsOnReceived: false,  // auto-SMS "we got your booking" (needs SMS gateway configured)
+      smsOnConfirm: true,    // auto-SMS when admin confirms a booking
+      pricesReviewed: false, // go-live checklist
       addons: [
         { id: 'helmet', name: 'Extra helmet', price: 50, perDay: false, maxQty: 2, active: true },
         { id: 'holder', name: 'Phone holder', price: 30, perDay: false, maxQty: 1, active: true },
@@ -61,6 +66,15 @@
         'Late returns are charged {lateFee} per hour.',
         'A refundable security deposit of {deposit} is collected at pickup and returned when the scooter comes back in good condition.',
         'Free cancellation up to {cancelHours} hours before pickup. Please message us on Messenger to cancel.'
+      ],
+      termsTl: [
+        'Kailangan ng valid na driver\'s license. Dalhin ang original sa pickup.',
+        'Laging magsuot ng helmet, pati ang angkas.',
+        'Sagot ng nag-rent ang anumang sira, pagkawala, at traffic violation habang naka-rent.',
+        'Ibalik ang scooter na pareho ang dami ng gasolina gaya noong kinuha.',
+        'May bayad na {lateFee} kada oras ang late na pagbalik.',
+        'May refundable na security deposit na {deposit} na kukunin sa pickup at ibabalik kapag maayos ang scooter.',
+        'Libre ang pag-cancel hanggang {cancelHours} oras bago ang pickup. Mag-message lang sa amin sa Messenger.'
       ]
     };
   }
@@ -191,7 +205,7 @@
     if (method === 'gcash' && !body.payment.proof) fail(400, 'Please upload your GCash payment screenshot.');
     const addonSel = {};
     Object.entries(body.addons || {}).forEach(([k, v]) => { addonSel[str(k, 40)] = num(v, 0, 10); });
-    return { pickup, ret, customer, method, gcashRef, addonSel, model: str(body.model, 80) };
+    return { pickup, ret, customer, method, gcashRef, addonSel, model: str(body.model, 80), lang: body.lang === 'tl' ? 'tl' : 'en' };
   }
   /** Re-check availability and store the booking. Must run synchronously after the final check (no double-booking race). */
   function commitBooking(data, draft, files, genId) {
@@ -205,10 +219,68 @@
       addonSel: draft.addonSel, quote: BAY.quote(unit, draft.pickup, draft.ret, draft.addonSel, data.settings),
       customer: draft.customer, licensePhoto: files.licensePhoto || null,
       payment: { method: draft.method, gcashRef: draft.gcashRef, proof: files.proof || null, status: 'unpaid' },
-      deposit: 'pending', notes: '', history: [{ at: now, status: 'pending' }]
+      deposit: 'pending', notes: '', history: [{ at: now, status: 'pending' }],
+      lang: draft.lang || 'en', source: 'online', sms: []
     };
     data.bookings.push(booking);
     return booking;
+  }
+
+  /** Validate an admin walk-in booking (customer at the counter). Returns a draft or throws. */
+  function prepareWalkIn(data, body) {
+    const unit = data.units.find((u) => u.id === body.scooterId);
+    if (!unit) fail(400, 'Please choose a scooter.');
+    if (unit.status === 'maintenance') fail(400, `${unit.name} (${unit.plate}) is under maintenance.`);
+    const pickup = str(body.pickup, 16), ret = str(body.return, 16);
+    if (!BAY.isLocal(pickup) || !BAY.isLocal(ret)) fail(400, 'Please set the pickup and return date & time.');
+    if (BAY.toEpoch(ret) <= BAY.toEpoch(pickup)) fail(400, 'Return must be after pickup.');
+    if (BAY.toEpoch(ret) - BAY.toEpoch(pickup) > (data.settings.maxDays || 30) * 864e5) fail(400, 'That rental is longer than the maximum allowed.');
+    const c = body.customer || {};
+    const customer = {
+      name: str(c.name, 80), mobile: str(c.mobile, 20).replace(/[^\d+]/g, ''), email: str(c.email, 120),
+      fb: str(c.fb, 80), stayingAt: str(c.stayingAt, 120), riders: num(c.riders, 1, data.settings.maxRiders || 2)
+    };
+    if (customer.name.length < 2) fail(400, 'Please enter the customer\'s name.');
+    if (customer.mobile && !/^(\+?63|0)9\d{9}$/.test(customer.mobile) && !/^\+\d{8,15}$/.test(customer.mobile)) fail(400, 'Please check the mobile number.');
+    const status = body.status === 'confirmed' ? 'confirmed' : 'picked_up';
+    const addonSel = {};
+    Object.entries(body.addons || {}).forEach(([k, v]) => { addonSel[str(k, 40)] = num(v, 0, 10); });
+    return {
+      unitId: unit.id, pickup, ret, customer, status, addonSel,
+      method: body.method === 'gcash' ? 'gcash' : 'cash', gcashRef: str(body.gcashRef, 40),
+      paid: !!body.paid, depositCollected: status === 'picked_up' && body.depositCollected !== false,
+      notes: str(body.notes, 1000), lang: body.lang === 'tl' ? 'tl' : 'en'
+    };
+  }
+  /** Store a walk-in booking. Re-checks that the chosen unit is free (call under the store lock). */
+  function commitWalkIn(data, draft, files, genId) {
+    const unit = data.units.find((u) => u.id === draft.unitId);
+    if (!unit) fail(400, 'Please choose a scooter.');
+    if (unitBusy(data, unit.id, draft.pickup, draft.ret)) fail(409, `${unit.name} (${unit.plate}) is already booked during this time.`);
+    data.counter = (data.counter || 0) + 1;
+    const now = new Date().toISOString();
+    const booking = {
+      id: (genId || (() => randomId(6)))(), ref: 'BAY-' + String(data.counter).padStart(4, '0'), createdAt: now, status: draft.status,
+      scooterId: unit.id, model: unit.name, pickup: draft.pickup, return: draft.ret,
+      addonSel: draft.addonSel, quote: BAY.quote(unit, draft.pickup, draft.ret, draft.addonSel, data.settings),
+      customer: draft.customer, licensePhoto: (files && files.licensePhoto) || null,
+      payment: { method: draft.method, gcashRef: draft.gcashRef, proof: null, status: draft.paid ? 'paid' : 'unpaid' },
+      deposit: draft.depositCollected ? 'collected' : 'pending', notes: draft.notes,
+      history: [{ at: now, status: draft.status }], lang: draft.lang, source: 'walk-in', sms: []
+    };
+    if (draft.status === 'picked_up') unit.status = 'rented';
+    data.bookings.push(booking);
+    return booking;
+  }
+
+  /** Remove the sample bookings shipped with a fresh install. Returns removed ids. */
+  function clearSamples(data) {
+    const removed = data.bookings.filter((b) => b.sample).map((b) => b.id);
+    data.bookings = data.bookings.filter((b) => !b.sample);
+    data.units.forEach((u) => {
+      if (u.status === 'rented' && !data.bookings.some((b) => b.scooterId === u.id && b.status === 'picked_up')) u.status = 'available';
+    });
+    return removed;
   }
   function hasFreeUnit(data, draft) {
     return freeUnits(data, draft.pickup, draft.ret).some((u) => u.name === draft.model);
@@ -285,6 +357,10 @@
     ['shopName', 'tagline', 'address', 'landmark', 'mapsUrl', 'phone', 'messengerUrl', 'gcashNumber', 'gcashName', 'adminEmail']
       .forEach((k) => { if (k in body) s[k] = str(body[k], 300); });
     if ('intro' in body) s.intro = str(body.intro, 1000);
+    if ('introTl' in body) s.introTl = str(body.introTl, 1000);
+    if ('taglineTl' in body) s.taglineTl = str(body.taglineTl, 300);
+    ['smsOnReceived', 'smsOnConfirm', 'pricesReviewed'].forEach((k) => { if (k in body) s[k] = !!body[k]; });
+    if (Array.isArray(body.termsTl)) s.termsTl = body.termsTl.map((t) => str(t, 500)).filter(Boolean).slice(0, 30);
     ['openTime', 'closeTime'].forEach((k) => { if (/^\d{2}:\d{2}$/.test(body[k] || '')) s[k] = body[k]; });
     const nums = { slotMinutes: [15, 120], leadMinutes: [0, 10080], bufferMinutes: [0, 1440], graceMinutes: [0, 600], minHours: [1, 48],
       maxDays: [1, 365], halfDayHours: [1, 23], multiDayMinDays: [2, 60], deposit: [0, 1e6], lateFeePerHour: [0, 1e5],
@@ -331,12 +407,12 @@
   function exportCsv(data) {
     const unitById = Object.fromEntries(data.units.map((u) => [u.id, u]));
     const rows = [['Ref', 'Created', 'Status', 'Scooter', 'Plate', 'Pickup', 'Return', 'Name', 'Mobile', 'Email', 'Facebook', 'Staying at',
-      'Riders', 'Add-ons', 'Rental', 'Add-ons total', 'Total', 'Deposit', 'Deposit status', 'Payment', 'GCash ref', 'Payment status', 'Notes']];
+      'Riders', 'Add-ons', 'Rental', 'Add-ons total', 'Total', 'Deposit', 'Deposit status', 'Payment', 'GCash ref', 'Payment status', 'Source', 'Language', 'Notes']];
     data.bookings.slice().sort((a, b) => a.pickup.localeCompare(b.pickup)).forEach((b) => rows.push([
       b.ref, b.createdAt, BAY.STATUS_LABELS[b.status], b.model, (unitById[b.scooterId] || {}).plate, b.pickup.replace('T', ' '), b.return.replace('T', ' '),
       b.customer.name, b.customer.mobile, b.customer.email, b.customer.fb, b.customer.stayingAt, b.customer.riders,
       b.quote.addons.map((a) => a.name + ' x' + a.qty).join('; '), b.quote.rental, b.quote.addonsTotal, b.quote.total,
-      b.quote.deposit, b.deposit, b.payment.method, b.payment.gcashRef, b.payment.status, b.notes
+      b.quote.deposit, b.deposit, b.payment.method, b.payment.gcashRef, b.payment.status, b.source || 'online', b.lang || 'en', b.notes
     ]));
     return '﻿' + rows.map((r) => r.map((v) => {
       let s = String(v == null ? '' : v);
@@ -366,6 +442,22 @@
   }
   function customerConfirmation(b, s) {
     const first = (b.customer.name || '').split(' ')[0] || 'there';
+    if (b.lang === 'tl') {
+      return [
+        `Hi ${first}! CONFIRMED na ang scooter booking mo na ${b.ref} sa ${s.shopName}. 🛵`,
+        ``,
+        `Scooter: ${b.model}`,
+        `Pickup: ${BAY.fmtLocal(b.pickup)}`,
+        `Balik: ${BAY.fmtLocal(b.return)}`,
+        `Add-ons: ${b.quote.addons.length ? addonText(b) : 'wala'}`,
+        `Kabuuang renta: ${BAY.peso(b.quote.total)}${b.payment.method === 'gcash' && b.payment.status === 'paid' ? ' (bayad na via GCash, salamat!)' : ''}`,
+        `Refundable deposit: ${BAY.peso(b.quote.deposit)} (cash sa pickup)`,
+        ``,
+        `📍 ${s.address} — ${s.landmark}`,
+        `Mapa: ${s.mapsUrl}`,
+        `Dalhin ang original na driver's license. Kita-kits — Salamat po!`
+      ].join('\n');
+    }
     return [
       `Hi ${first}! Your scooter booking ${b.ref} with ${s.shopName} is CONFIRMED. 🛵`,
       ``,
@@ -381,10 +473,42 @@
       `Please bring your original driver's license. See you soon — Salamat po!`
     ].join('\n');
   }
+  /** Short SMS texts. Plain GSM characters only ("P" not "₱", no emoji) so each fits in 1–2 SMS credits. */
+  function smsText(b, s, kind) {
+    const when = BAY.fmtLocal(b.pickup).replace(/^\w+, /, '').replace(' · ', ' ').replace(' AM', 'AM').replace(' PM', 'PM');
+    const dep = 'P' + Math.round(b.quote.deposit).toLocaleString('en-US');
+    const tl = b.lang === 'tl';
+    if (kind === 'received') {
+      return tl
+        ? `${s.shopName}: Natanggap namin ang booking ${b.ref} (${b.model}, ${when}). Kukumpirmahin namin agad. Salamat po!`
+        : `${s.shopName}: We got your booking ${b.ref} (${b.model}, ${when}). We'll confirm shortly. Salamat!`;
+    }
+    return tl
+      ? `${s.shopName}: CONFIRMED na ang booking ${b.ref}. ${b.model}, pickup ${when}. Dalhin ang lisensya at ${dep} deposit. Salamat po!`
+      : `${s.shopName}: Booking ${b.ref} CONFIRMED. ${b.model}, pickup ${when}. Please bring your license and ${dep} deposit. Salamat po!`;
+  }
   function messages(data, id) {
     const b = data.bookings.find((x) => x.id === id);
     if (!b) fail(404, 'Not found');
-    return { admin: adminAlert(b), customer: customerConfirmation(b, data.settings) };
+    return { admin: adminAlert(b), customer: customerConfirmation(b, data.settings), sms: smsText(b, data.settings, 'confirm') };
+  }
+
+  /** Go-live checklist: what still looks like sample/placeholder setup. */
+  function setupChecklist(data, extra) {
+    const s = data.settings;
+    const item = (id, done, label, hint, tab) => ({ id, done: !!done, label, hint, tab });
+    return [
+      item('password', !extra.defaultPassword, 'Change the admin password', 'Still using the default password.', 'settings'),
+      item('gcash', !/0917 000 0000/.test(s.gcashNumber) && s.gcashName !== 'BAYBAYIN S. R.', 'Enter your GCash number and name', 'GCash details are placeholders.', 'settings'),
+      item('qr', s.gcashQr, 'Upload your GCash QR code', 'Customers scan this to pay.', 'settings'),
+      item('messenger', !/yourpage/.test(s.messengerUrl), 'Set your Messenger link', 'Still m.me/yourpage.', 'settings'),
+      item('phone', !/0917 000 0000/.test(s.phone), 'Set the shop phone number', 'Phone is a placeholder.', 'settings'),
+      item('photos', data.units.length && data.units.every((u) => u.photo), 'Add a photo for every scooter', data.units.filter((u) => !u.photo).length + ' scooter(s) have no photo.', 'fleet'),
+      item('prices', s.pricesReviewed, 'Review prices, deposit and add-ons', 'Sample prices were filled in for you.', 'settings'),
+      item('samples', !data.bookings.some((b) => b.sample), 'Delete the sample bookings', 'Test bookings from the demo data.', 'summary'),
+      item('storage', extra.storage !== 'none', 'Connect booking storage', 'Needed on Vercel (Upstash Redis).', null),
+      item('sms', extra.smsEnabled, 'Optional: connect SMS (Semaphore)', 'For automatic text confirmations.', null)
+    ];
   }
 
   return {
@@ -392,8 +516,8 @@
     defaultSettings, defaultUnits, buildSeedData,
     publicSettings, publicUnit, publicView,
     unitBusy, freeUnits, availability,
-    prepareBooking, hasFreeUnit, commitBooking, lookup, updateBooking,
+    prepareBooking, hasFreeUnit, commitBooking, prepareWalkIn, commitWalkIn, clearSamples, lookup, updateBooking,
     addUnit, editUnit, deleteUnit, updateSettings,
-    summary, exportCsv, adminAlert, customerConfirmation, messages
+    summary, exportCsv, adminAlert, customerConfirmation, smsText, messages, setupChecklist
   };
 });

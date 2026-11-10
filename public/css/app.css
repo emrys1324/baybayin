@@ -29,6 +29,7 @@ p { margin: 0 0 .75rem; }
 .topbar .wrap { display: flex; align-items: center; gap: 10px; height: 56px; }
 .brand { font-weight: 800; color: var(--ocean-d); text-decoration: none; display: flex; align-items: center; gap: 8px; flex: 1; font-size: 1.05rem; }
 .brand svg { width: 30px; height: 30px; }
+.langbtn { border: 1.5px solid var(--line); background: #fff; color: var(--ocean-d); border-radius: 999px; min-height: 36px; padding: 4px 12px; font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer; }
 .iconbtn { border: 0; background: none; min-width: 44px; height: 44px; border-radius: 12px; font-size: 1.4rem; color: var(--ocean-d); cursor: pointer; }
 
 /* hero */

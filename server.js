@@ -12,6 +12,7 @@ const CORE = require('./public/js/core');
 const { createStore } = require('./lib/store');
 const { hashPassword } = require('./lib/seed');
 const { notifyNewBooking } = require('./lib/messages');
+const sms = require('./lib/sms');
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const MAX_BODY = 8 * 1024 * 1024;       // 8 MB (images are compressed in the browser first)
@@ -106,6 +107,23 @@ function createApp(opts = {}) {
     send(req, res, 200, buf, { 'Content-Type': MIME[path.extname(name)], 'Cache-Control': isPublic ? 'public, max-age=31536000, immutable' : 'private, max-age=86400' });
   }
 
+  /** Send an SMS for a booking and log the attempt on it. kind: 'received' | 'confirm'. */
+  async function smsBooking(b, data, kind) {
+    const r = await sms.send(b.customer.mobile, CORE.smsText(b, data.settings, kind));
+    b.sms = (b.sms || []).concat({ at: new Date().toISOString(), kind, ok: r.ok, error: r.error || undefined, to: r.to });
+    await store.saveBooking(b);
+    return r;
+  }
+
+  // Is the admin still using the default password? (cached per password hash)
+  let pwCheck = { hash: null, isDefault: false };
+  function usesDefaultPassword(data) {
+    if (pwCheck.hash !== data.auth.hash) {
+      pwCheck = { hash: data.auth.hash, isDefault: hashPassword('baybayin2026', data.auth.salt).hash === data.auth.hash };
+    }
+    return pwCheck.isDefault;
+  }
+
   function serveFile(req, res, file, cacheControl) {
     fs.stat(file, (err, st) => {
       if (err || !st.isFile()) return send(req, res, 404, 'Not found', { 'Content-Type': 'text/plain' });
@@ -134,6 +152,7 @@ function createApp(opts = {}) {
       return b;
     });
     await notifyNewBooking(booking, data.settings);
+    if (data.settings.smsOnReceived && sms.enabled()) await smsBooking(booking, data, 'received');
     ok(req, res, { booking: CORE.publicView(booking) });
   }
 
@@ -154,15 +173,48 @@ function createApp(opts = {}) {
     if (sub === 'me') return ok(req, res, { ok: true });
     if (sub === 'data' && m === 'GET') {
       const { auth, ...rest } = data;
-      return ok(req, res, Object.assign({}, rest, { summary: CORE.summary(data), now: BAY.nowLocal(), storage: store.kind }));
+      const extra = { defaultPassword: usesDefaultPassword(data), smsEnabled: sms.enabled(), storage: store.kind };
+      return ok(req, res, Object.assign({}, rest, extra, { summary: CORE.summary(data), now: BAY.nowLocal(), setup: CORE.setupChecklist(data, extra) }));
     }
     if (sub === 'summary') return ok(req, res, CORE.summary(data));
     if ((mm = /^bookings\/([a-f0-9]+)$/.exec(sub)) && m === 'PATCH') {
+      const before = (data.bookings.find((x) => x.id === mm[1]) || {}).status;
       const booking = CORE.updateBooking(data, mm[1], await readBody(req));
       await store.saveBooking(booking); await store.saveMeta(data);   // unit status may change too
-      return ok(req, res, { booking });
+      let smsResult;
+      if (booking.status === 'confirmed' && before !== 'confirmed' && data.settings.smsOnConfirm && sms.enabled()) {
+        smsResult = await smsBooking(booking, data, 'confirm');
+      }
+      return ok(req, res, { booking, sms: smsResult });
     }
     if ((mm = /^bookings\/([a-f0-9]+)\/messages$/.exec(sub)) && m === 'GET') return ok(req, res, CORE.messages(data, mm[1]));
+    if ((mm = /^bookings\/([a-f0-9]+)\/sms$/.exec(sub)) && m === 'POST') {
+      const b = data.bookings.find((x) => x.id === mm[1]);
+      if (!b) return fail(req, res, 404, 'Booking not found');
+      if (!sms.enabled()) return fail(req, res, 400, 'SMS is not set up yet. Use "Copy message" instead.');
+      const body = await readBody(req);
+      const r = await smsBooking(b, data, body.kind === 'received' ? 'received' : 'confirm');
+      return r.ok ? ok(req, res, { booking: b, sms: r }) : fail(req, res, 502, r.error);
+    }
+    if (sub === 'walkins' && m === 'POST') {
+      const body = await readBody(req);
+      const draft = CORE.prepareWalkIn(data, body);
+      const files = { licensePhoto: body.license ? await saveImage(body.license, false) : null };
+      const booking = await store.withLock(async () => {
+        const fresh = await store.load();
+        const b = CORE.commitWalkIn(fresh, draft, files, genId);
+        await store.saveBooking(b);
+        await store.saveMeta(fresh);          // counter + unit status
+        return b;
+      });
+      return ok(req, res, { booking });
+    }
+    if (sub === 'sample-bookings' && m === 'DELETE') {
+      const removed = CORE.clearSamples(data);
+      for (const id of removed) await store.deleteBooking(id);
+      await store.saveMeta(data);
+      return ok(req, res, { removed: removed.length });
+    }
     if (sub === 'units' && m === 'POST') { const unit = CORE.addUnit(data, await readBody(req), genId); await store.saveMeta(data); return ok(req, res, { unit }); }
     if ((mm = /^units\/([a-z0-9]+)$/.exec(sub))) {
       if (m === 'PUT') { const unit = CORE.editUnit(data, mm[1], await readBody(req)); await store.saveMeta(data); return ok(req, res, { unit }); }

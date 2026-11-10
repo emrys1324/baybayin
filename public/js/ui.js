@@ -42,14 +42,15 @@
     return close;
   };
 
+  var tr = function (s) { return window.I18N ? window.I18N.t(s) : s; };
   UI.copy = function (text) {
     function fallback() {
       var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
       document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); UI.toast('Copied!'); } catch (e) { UI.toast('Could not copy — please select and copy.'); }
+      try { document.execCommand('copy'); UI.toast(tr('Copied!')); } catch (e) { UI.toast('Could not copy — please select and copy.'); }
       ta.remove();
     }
-    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(function () { UI.toast('Copied!'); }, fallback);
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(function () { UI.toast(tr('Copied!')); }, fallback);
     else fallback();
   };
 

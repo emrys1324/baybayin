@@ -66,3 +66,14 @@ body.admin { background: #f6fafb; padding-bottom: calc(80px + var(--safe-b)); }
 .thumbs button { position: absolute; top: -6px; right: -6px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: var(--err); color: #fff; cursor: pointer; }
 pre.msg { white-space: pre-wrap; background: #f3f8fa; border-radius: 10px; padding: 10px; font: .85rem/1.45 ui-monospace, Menlo, monospace; max-height: 220px; overflow: auto; }
 .search { margin-top: 12px; }
+
+.tag { display: inline-block; font-size: .68rem; font-weight: 700; padding: 1px 6px; border-radius: 6px; background: var(--sand); color: var(--ink); margin-left: 6px; vertical-align: middle; }
+.setup-banner { display: block; width: 100%; text-align: left; margin-top: 12px; background: #fff4dc; color: #6b4a00; border: 1px solid #f0d58f; border-radius: var(--r); padding: 12px 14px; font: inherit; cursor: pointer; }
+.card.setup { border-color: #f0d58f; }
+.checklist { list-style: none; padding: 0; margin: 0; }
+.checklist li { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.checklist li:last-child { border: 0; }
+.checklist li > div { flex: 1; }
+.checklist li.done b { color: var(--muted); font-weight: 600; }
+.checklist .ck { font-size: 1.1rem; }
+.sms-log { padding-left: 1.1rem; margin: 8px 0 0; }
