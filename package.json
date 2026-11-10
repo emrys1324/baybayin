@@ -1,0 +1,14 @@
+{
+  "name": "baybayin-scooter-rental",
+  "version": "1.0.0",
+  "description": "Mobile-first booking app for Baybayin Scooter Rental, San Agustin, Romblon",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node lib/seed.js --force",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED"
+}
