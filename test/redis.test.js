@@ -28,6 +28,7 @@ function fakeUpstash() {
         case 'HGETALL': result = [...(hashes.get(a[0]) || new Map())].flat(); break;
         case 'INCR': { const n = (+kv.get(a[0]) || 0) + 1; kv.set(a[0], String(n)); result = n; break; }
         case 'EXPIRE': result = 1; break;
+        case 'PING': result = 'PONG'; break;
         case 'EVAL': { const key = a[2], id = a[3]; result = kv.get(key) === id ? (kv.delete(key), 1) : 0; break; }
         default: res.writeHead(400); return res.end(JSON.stringify({ error: 'unknown ' + cmd }));
       }
@@ -108,4 +109,12 @@ test('Vercel-style pre-parsed body is accepted', async () => {
     appA.handle(req, out);
   });
   assert.strictEqual(res.status, 401);
+});
+
+test('/api/health reports the database is connected', async () => {
+  const h = await (await fetch(baseA + '/api/health')).json();
+  assert.strictEqual(h.ok, true);
+  assert.strictEqual(h.storage, 'redis');
+  assert.strictEqual(h.source, 'UPSTASH_REDIS_REST_URL');
+  assert.ok(!JSON.stringify(h).includes('test-token'), 'never leaks the token');
 });

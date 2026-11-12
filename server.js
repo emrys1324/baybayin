@@ -9,7 +9,7 @@ const zlib = require('zlib');
 const crypto = require('crypto');
 const BAY = require('./public/js/shared');
 const CORE = require('./public/js/core');
-const { createStore } = require('./lib/store');
+const { createStore, redisConfig, storageEnvNames } = require('./lib/store');
 const { hashPassword } = require('./lib/seed');
 const { notifyNewBooking } = require('./lib/messages');
 const sms = require('./lib/sms');
@@ -27,6 +27,26 @@ const genId = () => crypto.randomBytes(6).toString('hex');
 
 function createApp(opts = {}) {
   const store = createStore(opts);
+
+  /** Setup diagnostics: which storage is in use and whether it answers. Shows env var NAMES only. */
+  async function health() {
+    const out = { ok: false, storage: store ? store.kind : 'none', vercel: !!process.env.VERCEL };
+    if (!store) {
+      out.envSeen = storageEnvNames();
+      out.hint = out.envSeen.length
+        ? 'Storage variables found, but none are Upstash REST credentials. In Vercel: Storage → Upstash for Redis (Upstash, not another Redis), connect it to this project, then redeploy.'
+        : 'No database variables in this deployment. In Vercel: Storage → Create Database → Upstash for Redis → connect to this project (tick Production), then Deployments → Redeploy.';
+      return out;
+    }
+    if (store.kind === 'redis') {
+      out.source = (redisConfig() || {}).source;
+      try { out.ok = (await store.cmd('PING')) === 'PONG'; } catch (e) { out.error = String(e.message).slice(0, 200); }
+      if (!out.ok) out.hint = 'Database variables found but the database did not answer. Check the Upstash database still exists and the token is current.';
+      return out;
+    }
+    out.ok = true;
+    return out;
+  }
 
   // ---------- helpers ----------
   function send(req, res, status, body, headers = {}) {
@@ -251,6 +271,7 @@ function createApp(opts = {}) {
         if (!store) return fail(req, res, 404, 'Not found');
         return await serveImage(req, res, mm[1], true);
       }
+      if (p === '/api/health' && m === 'GET') return ok(req, res, await health());
       if (p.startsWith('/api/')) {
         if (!store) return fail(req, res, 503, 'Online booking is being set up. Please message us on Facebook Messenger to book.');
         return await apiRoute(req, res, url, p, m, await store.load());

@@ -33,7 +33,7 @@ npm run build:demo
 The first server run creates `data/db.json` with **sample data**: 5 scooters (one is under maintenance) and 6 bookings in different statuses, dated around today.
 
 ```bash
-npm test             # API, pricing, SMS, walk-in, Redis/serverless and demo-build tests (18 tests)
+npm test             # API, pricing, SMS, walk-in, Redis/serverless and demo-build tests (25 tests)
 npm run seed         # reset data/db.json to sample data (overwrites!)
 ```
 
@@ -122,6 +122,9 @@ Vercel functions have no permanent disk, so on Vercel the app stores bookings an
 2. In the project, open **Storage → Create Database → Upstash for Redis** and connect it to the project. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_*`) automatically.
 3. Optional environment variables: `ADMIN_PASSWORD` (initial password, used on first run only), `SESSION_SECRET` (any long random string), plus the alert variables above.
 4. Redeploy. The first request seeds the sample data. Log in at `/admin` and change the password straight away.
+5. Check **`/api/health`** on your site. `"ok": true, "storage": "redis"` means bookings are saved. If it says `"storage": "none"`, its `hint` says what's missing and `envSeen` lists the storage variable *names* the deployment can see (never their values).
+
+The app finds the Upstash credentials under any of these names: `KV_REST_API_URL` + `KV_REST_API_TOKEN`, `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`, either pair with a custom prefix (e.g. `STORAGE_KV_REST_API_URL`), or an Upstash connection string in `REDIS_URL` / `KV_URL`. A non-Upstash Redis (e.g. Redis Cloud) won't work, because the app talks to Redis over Upstash's HTTPS API.
 
 How it fits Vercel: `public/` is served from Vercel's CDN, and every `/api/*` request goes to one function (`api/index.js`). Admin logins use signed cookies, so any function instance can verify them. Bookings are re-checked under a Redis lock, so two people can't book the last scooter at once, even on different instances. Request bodies on Vercel are limited to 4.5 MB, which is plenty because photos are compressed on the phone first.
 
